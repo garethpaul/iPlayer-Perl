@@ -25,6 +25,9 @@ Helpful reports include:
 ## Project Security Posture
 
 - This repository appears to be a public sample, documentation, or utility project. The active security scope is the code and documentation on the default branch.
+- `get_iplayer` is a legacy media-access CLI. Content access, downloads, cookies, credentials, proxy settings, and external player/transcoder commands should stay documented and tied to explicit user options.
+- `run.pl` should forward arguments directly to `get_iplayer` without shell command construction from user input.
+- Run `make check` after changing Perl scripts, wrapper behavior, documentation, ignore rules, man page handling, or generated help output.
 - Review found authentication, token, or session-related code paths; changes in those areas should receive security-focused review before merge.
 - Review found network clients, sockets, web APIs, or service endpoints; changes in those areas should receive security-focused review before merge.
 - Review found mobile permission or privacy-sensitive data handling; changes in those areas should receive security-focused review before merge.

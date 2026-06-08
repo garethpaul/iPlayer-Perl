@@ -3762,10 +3762,10 @@ sub display_metadata {
 		} elsif ( /^streams$/ ) {
 			# skip these
 		# If hash then list keys
-		} elsif ( ref$data{$_} eq 'HASH' ) {
+		} elsif ( ref $data{$_} eq 'HASH' ) {
 			for my $key ( sort keys %{$data{$_}} ) {
 				main::logger sprintf "%-15s ", $_.':';
-				if ( ref$data{$_}->{$key} ne 'HASH' ) {
+				if ( ref $data{$_}->{$key} ne 'HASH' ) {
 					main::logger "$key: $data{$_}->{$key}";
 				# This is the same as 'modes' list
 				#} else {
@@ -4087,7 +4087,7 @@ sub tag_file {
 		my $tags;
 		for my $tag ( keys %{$prog} ) {
 			# Used for firstbcast etc which are a version based HASH
-			if ( ref$prog->{$tag} eq 'HASH' ) {
+			if ( ref $prog->{$tag} eq 'HASH' ) {
 				$tags->{$tag} = $prog->{$tag}->{$prog->{version}};
 			} else {
 				$tags->{$tag} = $prog->{$tag};
@@ -5367,9 +5367,9 @@ sub parse_rdf_episode {
 	my $pid = extract_pid( $uri );
 	main::logger "INFO:      Episode '".$rdf->{'po:Episode'}->{'dc:title'}."' ($pid)\n";
 	# We don't really need the ver pids from here
-	if ( ref$rdf->{'po:Episode'}->{'po:version'} eq 'ARRAY' ) {
+	if ( ref $rdf->{'po:Episode'}->{'po:version'} eq 'ARRAY' ) {
 		for my $verpid_element ( @{ $rdf->{'po:Episode'}->{'po:version'} } ) {
-			main::logger "INFO:        With Version PID '".extract_pid( %{ $verpid_element }->{'rdf:resource'} )."'\n" if $opt->{debug};
+			main::logger "INFO:        With Version PID '".extract_pid( $verpid_element->{'rdf:resource'} )."'\n" if $opt->{debug};
 		}
 	} else {
 		main::logger "INFO:        With Version PID '".extract_pid( $rdf->{'po:Episode'}->{'po:version'}->{'rdf:resource'} )."'\n" if $opt->{debug};
@@ -5393,8 +5393,8 @@ sub parse_rdf_series {
 	main::logger "INFO:    Series: '".$rdf->{'po:Series'}->{'dc:title'}."' ($spid)\n";
 	main::logger "INFO:      From Brand PID '".$rdf->{'po:Brand'}->{'rdf:about'}."'\n" if $opt->{debug};
 	for my $episode_element ( @{ $rdf->{'po:Series'}->{'po:episode'} } ) {
-		my $pid = extract_pid( %{ $episode_element }->{'po:Episode'}->{'rdf:about'} );
-		main::logger "INFO:      Episode '".%{ $episode_element }->{'po:Episode'}->{'dc:title'}."' ($pid)\n";
+		my $pid = extract_pid( $episode_element->{'po:Episode'}->{'rdf:about'} );
+		main::logger "INFO:      Episode '".$episode_element->{'po:Episode'}->{'dc:title'}."' ($pid)\n";
 		push @pids, $pid;
 		#parse_rdf_episode( $ua, $pid );
 	}
@@ -5415,14 +5415,14 @@ sub parse_rdf_brand {
 	my $bpid = extract_pid( $uri );
 	main::logger "INFO:  Brand: '".$rdf->{'po:Brand'}->{'dc:title'}."' ($bpid)\n";
 	for my $series_element ( @{ $rdf->{'po:Brand'}->{'po:series'} } ) {
-		main::logger "INFO: With Series pid '".%{ $series_element }->{'rdf:resource'}."'\n" if $opt->{debug};
-		push @pids, parse_rdf_series( $ua, %{ $series_element }->{'rdf:resource'} );
+		main::logger "INFO: With Series pid '".$series_element->{'rdf:resource'}."'\n" if $opt->{debug};
+		push @pids, parse_rdf_series( $ua, $series_element->{'rdf:resource'} );
 	}
 	main::logger "INFO:    Series: <None>\n" if $#{ $rdf->{'po:Brand'}->{'po:episode'} };
 	for my $episode_element ( @{ $rdf->{'po:Brand'}->{'po:episode'} } ) {
-		main::logger "INFO:      Episode pid: ".%{ $episode_element }->{'rdf:resource'}."\n" if $opt->{debug};
-		push @pids, extract_pid( %{ $episode_element }->{'rdf:resource'} );
-		parse_rdf_episode( $ua, %{ $episode_element }->{'rdf:resource'} );
+		main::logger "INFO:      Episode pid: ".$episode_element->{'rdf:resource'}."\n" if $opt->{debug};
+		push @pids, extract_pid( $episode_element->{'rdf:resource'} );
+		parse_rdf_episode( $ua, $episode_element->{'rdf:resource'} );
 	}
 	return @pids;
 }
