@@ -113,6 +113,8 @@ def check_wrapper_guardrails():
 
     legacy_hash_ref = re.compile(r"%\{\s*\$(?:verpid_element|episode_element|series_element)\s*\}\s*->")
     expect(not legacy_hash_ref.search(get_iplayer), "get_iplayer should not use legacy hash-as-reference dereferences")
+    expect("ref$data" not in get_iplayer and "ref$prog" not in get_iplayer and "ref$rdf" not in get_iplayer,
+           "get_iplayer should keep modern Perl-compatible ref spacing")
     expect("my $version = 2.76;" in get_iplayer, "get_iplayer version should remain visible")
     expect("HTTP::Cookies" in get_iplayer, "get_iplayer cookie handling should remain visible for review")
     expect("LWP::UserAgent" in get_iplayer, "get_iplayer network client should remain visible for review")
