@@ -1,2 +1,33 @@
 get_iplayer -- tool for accessing tv and radio from BBC iPlayer.
 
+## Radio recording quality
+
+Radio downloads use the stream modes advertised for a programme. Before recording, inspect the available modes:
+
+```
+get_iplayer --type=radio --info "<programme search>"
+```
+
+When higher-quality AAC modes are available, prefer them explicitly:
+
+```
+get_iplayer --type=radio --radiomode=flashaachigh,flashaacstd,iphone "<programme search>"
+```
+
+The tool cannot guarantee a particular bitrate. Available modes can vary by programme, time, BBC service changes, and the network location seen by the BBC stream service. If the requested mode is not available, get_iplayer falls back through the remaining modes you provided.
+
+## Proxy notes
+
+Use `--proxy` only with a normal HTTP proxy URL:
+
+```
+get_iplayer --proxy "http://HOST:PORT" --type=radio --radiomode=flashaachigh "<programme search>"
+```
+
+If a proxy works for web requests but fails during recording, try `--partial-proxy` so the proxy is used only where the script requires it:
+
+```
+get_iplayer --partial-proxy --proxy "http://HOST:PORT" --type=radio "<programme search>"
+```
+
+`localhost:1935` is an RTMP stream endpoint, not an HTTP proxy address or a web page that browser proxy tools can target. A VPN or system-level network route is handled outside get_iplayer; inside the tool, the supported proxy input is the `--proxy` URL above.
