@@ -56,6 +56,7 @@ def check_required_files():
         "SECURITY.md",
         "VISION.md",
         "docs/plans/2026-06-08-iplayer-perl-baseline.md",
+        "docs/plans/2026-06-08-perl5lib-path-separator.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -106,6 +107,9 @@ def check_wrapper_guardrails():
     expect(os.access(str(rel("run.pl")), os.X_OK), "run.pl should be executable")
     expect("use strict;" in run_pl, "run.pl should enable strict")
     expect("use warnings;" in run_pl, "run.pl should enable warnings")
+    expect("use Config qw(%Config);" in run_pl, "run.pl should use Perl configuration for path separators")
+    expect("$Config{path_sep}" in run_pl, "run.pl should read the configured PERL5LIB path separator")
+    expect('join ":"' not in run_pl, "run.pl should not hardcode Unix PERL5LIB separators")
     expect("exec { $command } $command, @ARGV;" in run_pl, "run.pl should exec get_iplayer without a shell")
     expect("`$command`" not in run_pl, "run.pl should not execute a shell command string")
     expect("join(\" \",map" not in run_pl, "run.pl should not quote argv by hand")
@@ -126,6 +130,7 @@ def check_docs():
     security = read_text("SECURITY.md")
     changes = read_text("CHANGES.md")
     plan = read_text("docs/plans/2026-06-08-iplayer-perl-baseline.md")
+    path_plan = read_text("docs/plans/2026-06-08-perl5lib-path-separator.md")
     gitignore = read_text(".gitignore")
 
     for text_name, text in (
@@ -141,9 +146,13 @@ def check_docs():
 
     expect("scripts/check-baseline.py" in readme, "README should name the baseline checker")
     expect("perl -c" in readme, "README should document Perl syntax verification")
+    expect("path separator" in readme.lower() and "path separator" in vision.lower() and "path separator" in security.lower(),
+           "docs should describe PERL5LIB path separator handling")
     expect("argument-preserving" in changes, "CHANGES should mention safe argv forwarding")
+    expect("`PERL5LIB` path separator" in changes, "CHANGES should mention PERL5LIB path separator handling")
     expect("modern Perl" in changes, "CHANGES should mention modern Perl compatibility")
     expect("status: completed" in plan, "baseline plan should be marked completed")
+    expect("status: completed" in path_plan, "PERL5LIB path separator plan should be marked completed")
 
     for pattern in (".env", ".env.*", "downloads/", "*.mp4", "*.mp3", "*.m4a", "*.flv", "__pycache__/", "*.pyc"):
         expect(pattern in gitignore, ".gitignore should keep {} out of git".format(pattern))

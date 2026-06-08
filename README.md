@@ -50,12 +50,12 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Running or Using the Project
 
 - Run `./get_iplayer --help` to inspect command-line options, then use the options relevant to the BBC programme or radio workflow you are testing.
-- Use `./run.pl --help` when exercising the wrapper. It forwards arguments directly to `get_iplayer` without invoking a shell.
+- Use `./run.pl --help` when exercising the wrapper. It forwards arguments directly to `get_iplayer` without invoking a shell and builds `PERL5LIB` with Perl's configured path separator.
 - This tool can download or stream media, use cookies or credentials, and invoke external players/transcoders depending on user-supplied options. Keep content access explicit and user-controlled.
 
 ## Testing and Verification
 
-- `make check` runs `scripts/check-baseline.py`, which validates Perl syntax with `perl -c`, verifies help output, parses the compressed man page and SVG overview, checks safe wrapper argument forwarding, and enforces documentation guardrails.
+- `make check` runs `scripts/check-baseline.py`, which validates Perl syntax with `perl -c`, verifies help output, parses the compressed man page and SVG overview, checks safe wrapper argument forwarding and `PERL5LIB` path separator handling, and enforces documentation guardrails.
 - `perl -c run.pl`
 - `perl -c get_iplayer`
 

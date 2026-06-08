@@ -23,6 +23,7 @@ Priority:
 
 - Preserve the command-line tool, install notes, license, and man page
 - Keep `run.pl` forwarding arguments without shell command construction
+- Keep `run.pl` building `PERL5LIB` with Perl's configured path separator
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
 - Keep security policy visible
 - Avoid undocumented behavior around content access or downloads
@@ -42,6 +43,7 @@ Contribution rules:
 - Run `make check` before pushing wrapper, script, documentation, or ignore-rule changes.
 - Do not add credential capture or hidden telemetry.
 - Document any behavior that changes content access or storage.
+- Preserve wrapper path separator handling when changing local dependency paths.
 
 ## Security And Compliance
 

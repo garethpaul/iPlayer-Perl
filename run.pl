@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use Config qw(%Config);
 use FindBin qw($Bin);
 
 my @local_libs = (
@@ -10,7 +11,8 @@ my @local_libs = (
 );
 
 push @local_libs, $ENV{PERL5LIB} if defined $ENV{PERL5LIB} && length $ENV{PERL5LIB};
-$ENV{PERL5LIB} = join ":", @local_libs;
+my $path_separator = $Config{path_sep} || ":";
+$ENV{PERL5LIB} = join $path_separator, @local_libs;
 
 my $command = "$Bin/get_iplayer";
 exec { $command } $command, @ARGV;
