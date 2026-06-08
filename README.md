@@ -51,7 +51,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 ## Configuration and Secrets
 
-- Detected references to Parse. Keep API keys, OAuth credentials, tokens, and account-specific values in local configuration only.
+- The scan found credential-adjacent names. Review configuration paths before running against real accounts.
 
 ## Security and Privacy Notes
 
