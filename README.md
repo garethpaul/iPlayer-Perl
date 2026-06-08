@@ -2,21 +2,25 @@
 
 ## Overview
 
-`garethpaul/iPlayer-Perl` is a public sample, documentation, or utility project. get_iplayer
+`garethpaul/iPlayer-Perl` is a Perl command-line utility. get_iplayer
 
-This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: no dominant source language detected.
+This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Perl (1).
 
 ## Repository Contents
 
+- `README.md` - project overview and local usage notes
 - `README`
+- `get_iplayer` - main command-line program
+- `INSTALL` - project installation notes
+- `run.pl` - Perl script or command wrapper
 - `SECURITY.md` - security reporting and disclosure guidance
 - `VISION.md` - project direction and maintenance guardrails
 
 Additional scan context:
 
 - Source directories: no top-level source directories detected
-- Dependency and build manifests: none detected
-- Entry points or build surfaces: none detected
+- Dependency and build manifests: INSTALL
+- Entry points or build surfaces: get_iplayer, run.pl
 - Test-looking files: no obvious test files detected
 
 ## Getting Started
@@ -24,6 +28,7 @@ Additional scan context:
 ### Prerequisites
 
 - Git
+- Perl
 
 ### Setup
 
@@ -36,7 +41,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Running or Using the Project
 
-- No single runtime entry point was identified. Start by reading the source files and manifests listed above.
+- Run `./get_iplayer --help` to inspect command-line options, then use the options relevant to the BBC programme or radio workflow you are testing.
 
 ## Testing and Verification
 
@@ -46,14 +51,15 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 ## Configuration and Secrets
 
-- No required secret or credential file was identified in the repository scan. If you add integrations later, keep secrets out of git.
+- Detected references to Parse. Keep API keys, OAuth credentials, tokens, and account-specific values in local configuration only.
 
 ## Security and Privacy Notes
 
-- Review changes touching authentication or token handling; examples from the scan include LICENSE.txt.
-- Review changes touching network requests, sockets, or service endpoints; examples from the scan include LICENSE.txt.
-- Review changes touching mobile permissions or privacy-sensitive device data; examples from the scan include LICENSE.txt.
-- Review changes touching database, model, or persistence code; examples from the scan include LICENSE.txt.
+- Review changes touching authentication or token handling; examples from the scan include get_iplayer.
+- Review changes touching external API calls or credential-adjacent configuration; examples from the scan include get_iplayer.
+- Review changes touching network requests, sockets, or service endpoints; examples from the scan include get_iplayer.
+- Review changes touching mobile permissions or privacy-sensitive device data; examples from the scan include get_iplayer.
+- Review changes touching file, media, JSON, XML, CSV, OCR, or data parsing; examples from the scan include get_iplayer.
 
 ## Maintenance Notes
 
@@ -63,10 +69,4 @@ When the required SDK or runtime is unavailable, use static checks and source re
 ## Contributing
 
 Keep changes small and tied to the project that is already present in this repository. For code changes, document the toolchain used, avoid committing generated dependency directories or local configuration, and update this README when setup or verification steps change.
-
-## Original Project Notes
-
-The repository also contains `README`. Its existing project summary is:
-
-> get_iplayer -- tool for accessing tv and radio from BBC iPlayer.
 
