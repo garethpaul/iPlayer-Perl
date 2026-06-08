@@ -44,3 +44,6 @@ credential collection or automated access beyond documented user intent.
 - Content-access changes without compliance notes
 - License or attribution removals
 - Bulk generated downloads in the repository
+
+This list is a roadmap guardrail, not a permanent rule.
+Strong user demand and strong technical rationale can change it.
