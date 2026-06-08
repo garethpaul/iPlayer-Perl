@@ -34,6 +34,11 @@ Contribution rules:
 
 ## Security And Compliance
 
+Canonical security policy and reporting:
+
+- [`SECURITY.md`](SECURITY.md)
+
+
 Media-access tools should be transparent about what they download, where files
 are stored, and which credentials or cookies they use. Do not add hidden
 credential collection or automated access beyond documented user intent.
