@@ -1,5 +1,8 @@
 ## iPlayer Perl Vision
 
+This document explains the current state and direction of the project.
+Project overview and developer docs: [`README.md`](README.md)
+
 iPlayer Perl is a copy of `get_iplayer`, a Perl tool for accessing BBC iPlayer
 TV and radio content.
 
