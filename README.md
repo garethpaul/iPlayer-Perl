@@ -51,14 +51,12 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 ## Configuration and Secrets
 
-- The scan found credential-adjacent names. Review configuration paths before running against real accounts.
+- No required secret or credential file was identified in the repository scan. If you add integrations later, keep secrets out of git.
 
 ## Security and Privacy Notes
 
 - Review changes touching authentication or token handling; examples from the scan include get_iplayer.
-- Review changes touching external API calls or credential-adjacent configuration; examples from the scan include get_iplayer.
 - Review changes touching network requests, sockets, or service endpoints; examples from the scan include get_iplayer.
-- Review changes touching mobile permissions or privacy-sensitive device data; examples from the scan include get_iplayer.
 - Review changes touching file, media, JSON, XML, CSV, OCR, or data parsing; examples from the scan include get_iplayer.
 
 ## Maintenance Notes
