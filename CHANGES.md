@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-09
+
+- Skipped duplicate local library paths when `PERL5LIB` already contains one of
+  the wrapper-managed dependency paths.
+
 ## 2026-06-08
 
 - Replaced the `run.pl` shell backtick wrapper with an argument-preserving `exec` call.

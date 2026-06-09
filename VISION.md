@@ -29,6 +29,8 @@ Priority:
 - Keep HTTPS submodule URLs for dependency metadata
 - Keep wrapper `PERL5LIB` entries limited to existing local library paths before
   preserving external values
+- Avoid duplicate local library paths when the environment already includes one
+  of the wrapper paths
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
 - Keep security policy visible
 - Avoid undocumented behavior around content access or downloads

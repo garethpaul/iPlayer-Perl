@@ -11,9 +11,14 @@ my @local_libs = (
 	"$Bin/deps/mousex-nativetraits/lib",
 );
 
-my @perl5lib_entries = grep { -d $_ } @local_libs;
-push @perl5lib_entries, $ENV{PERL5LIB} if defined $ENV{PERL5LIB} && length $ENV{PERL5LIB};
 my $path_separator = $Config{path_sep} || ":";
+my %existing_perl5lib_entries = ();
+if (defined $ENV{PERL5LIB} && length $ENV{PERL5LIB}) {
+	%existing_perl5lib_entries = map { $_ => 1 } split /\Q$path_separator\E/, $ENV{PERL5LIB};
+}
+
+my @perl5lib_entries = grep { -d $_ && !$existing_perl5lib_entries{$_} } @local_libs;
+push @perl5lib_entries, $ENV{PERL5LIB} if defined $ENV{PERL5LIB} && length $ENV{PERL5LIB};
 if (@perl5lib_entries) {
 	$ENV{PERL5LIB} = join $path_separator, @perl5lib_entries;
 }
