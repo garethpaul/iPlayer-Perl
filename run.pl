@@ -11,9 +11,12 @@ my @local_libs = (
 	"$Bin/deps/mousex-nativetraits/lib",
 );
 
-push @local_libs, $ENV{PERL5LIB} if defined $ENV{PERL5LIB} && length $ENV{PERL5LIB};
+my @perl5lib_entries = grep { -d $_ } @local_libs;
+push @perl5lib_entries, $ENV{PERL5LIB} if defined $ENV{PERL5LIB} && length $ENV{PERL5LIB};
 my $path_separator = $Config{path_sep} || ":";
-$ENV{PERL5LIB} = join $path_separator, @local_libs;
+if (@perl5lib_entries) {
+	$ENV{PERL5LIB} = join $path_separator, @perl5lib_entries;
+}
 
 my $command = "$Bin/get_iplayer";
 exec { $command } $command, @ARGV;

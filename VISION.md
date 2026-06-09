@@ -26,6 +26,8 @@ Priority:
 - Keep `run.pl` building `PERL5LIB` with Perl's configured path separator
 - Keep wrapper submodule library paths aligned with `mouse`, `mousex-getopt`,
   and `mousex-nativetraits`
+- Keep wrapper `PERL5LIB` entries limited to existing local library paths before
+  preserving external values
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
 - Keep security policy visible
 - Avoid undocumented behavior around content access or downloads
