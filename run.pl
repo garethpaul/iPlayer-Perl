@@ -7,6 +7,7 @@ use FindBin qw($Bin);
 
 my @local_libs = (
 	"$Bin/deps/mouse/lib",
+	"$Bin/deps/mousex-getopt/lib",
 	"$Bin/deps/mousex-nativetraits/lib",
 );
 

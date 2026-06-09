@@ -24,6 +24,8 @@ Priority:
 - Preserve the command-line tool, install notes, license, and man page
 - Keep `run.pl` forwarding arguments without shell command construction
 - Keep `run.pl` building `PERL5LIB` with Perl's configured path separator
+- Keep wrapper submodule library paths aligned with `mouse`, `mousex-getopt`,
+  and `mousex-nativetraits`
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
 - Keep security policy visible
 - Avoid undocumented behavior around content access or downloads
@@ -44,6 +46,7 @@ Contribution rules:
 - Do not add credential capture or hidden telemetry.
 - Document any behavior that changes content access or storage.
 - Preserve wrapper path separator handling when changing local dependency paths.
+- Keep submodule library path changes reflected in `run.pl` and the baseline.
 
 ## Security And Compliance
 

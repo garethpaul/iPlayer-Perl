@@ -55,8 +55,10 @@ def check_required_files():
         "README.md",
         "SECURITY.md",
         "VISION.md",
+        ".gitmodules",
         "docs/plans/2026-06-08-iplayer-perl-baseline.md",
         "docs/plans/2026-06-08-perl5lib-path-separator.md",
+        "docs/plans/2026-06-08-wrapper-submodule-lib-paths.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -109,6 +111,8 @@ def check_wrapper_guardrails():
     expect("use warnings;" in run_pl, "run.pl should enable warnings")
     expect("use Config qw(%Config);" in run_pl, "run.pl should use Perl configuration for path separators")
     expect("$Config{path_sep}" in run_pl, "run.pl should read the configured PERL5LIB path separator")
+    for local_lib in ("deps/mouse/lib", "deps/mousex-getopt/lib", "deps/mousex-nativetraits/lib"):
+        expect(local_lib in run_pl, "run.pl should include local submodule library path {}".format(local_lib))
     expect('join ":"' not in run_pl, "run.pl should not hardcode Unix PERL5LIB separators")
     expect("exec { $command } $command, @ARGV;" in run_pl, "run.pl should exec get_iplayer without a shell")
     expect("`$command`" not in run_pl, "run.pl should not execute a shell command string")
@@ -131,6 +135,7 @@ def check_docs():
     changes = read_text("CHANGES.md")
     plan = read_text("docs/plans/2026-06-08-iplayer-perl-baseline.md")
     path_plan = read_text("docs/plans/2026-06-08-perl5lib-path-separator.md")
+    submodule_lib_plan = read_text("docs/plans/2026-06-08-wrapper-submodule-lib-paths.md")
     gitignore = read_text(".gitignore")
 
     for text_name, text in (
@@ -148,11 +153,15 @@ def check_docs():
     expect("perl -c" in readme, "README should document Perl syntax verification")
     expect("path separator" in readme.lower() and "path separator" in vision.lower() and "path separator" in security.lower(),
            "docs should describe PERL5LIB path separator handling")
+    expect("mousex-getopt" in readme.lower() and "mousex-getopt" in vision.lower(),
+           "docs should describe wrapper submodule library path alignment")
     expect("argument-preserving" in changes, "CHANGES should mention safe argv forwarding")
     expect("`PERL5LIB` path separator" in changes, "CHANGES should mention PERL5LIB path separator handling")
+    expect("mousex-getopt" in changes.lower(), "CHANGES should mention MouseX::Getopt wrapper path handling")
     expect("modern Perl" in changes, "CHANGES should mention modern Perl compatibility")
     expect("status: completed" in plan, "baseline plan should be marked completed")
     expect("status: completed" in path_plan, "PERL5LIB path separator plan should be marked completed")
+    expect("status: completed" in submodule_lib_plan, "wrapper submodule lib path plan should be marked completed")
 
     for pattern in (".env", ".env.*", "downloads/", "*.mp4", "*.mp3", "*.m4a", "*.flv", "__pycache__/", "*.pyc"):
         expect(pattern in gitignore, ".gitignore should keep {} out of git".format(pattern))
