@@ -60,6 +60,7 @@ def check_required_files():
         "docs/plans/2026-06-08-perl5lib-path-separator.md",
         "docs/plans/2026-06-08-existing-wrapper-lib-paths.md",
         "docs/plans/2026-06-08-wrapper-submodule-lib-paths.md",
+        "docs/plans/2026-06-09-https-submodule-urls.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -106,6 +107,7 @@ def check_perl_runtime():
 def check_wrapper_guardrails():
     run_pl = read_text("run.pl")
     get_iplayer = read_text("get_iplayer")
+    gitmodules = read_text(".gitmodules")
 
     expect(os.access(str(rel("run.pl")), os.X_OK), "run.pl should be executable")
     expect("use strict;" in run_pl, "run.pl should enable strict")
@@ -131,6 +133,13 @@ def check_wrapper_guardrails():
     expect("my $version = 2.76;" in get_iplayer, "get_iplayer version should remain visible")
     expect("HTTP::Cookies" in get_iplayer, "get_iplayer cookie handling should remain visible for review")
     expect("LWP::UserAgent" in get_iplayer, "get_iplayer network client should remain visible for review")
+    expect("git://" not in gitmodules, ".gitmodules should not use unauthenticated git:// submodule URLs")
+    for submodule_url in (
+        "https://github.com/gfx/p5-Mouse.git",
+        "https://github.com/gfx/mousex-getopt.git",
+        "https://github.com/gfx/p5-MouseX-NativeTraits.git",
+    ):
+        expect(submodule_url in gitmodules, ".gitmodules should use HTTPS submodule URL {}".format(submodule_url))
 
 
 def check_docs():
@@ -142,6 +151,7 @@ def check_docs():
     path_plan = read_text("docs/plans/2026-06-08-perl5lib-path-separator.md")
     existing_lib_plan = read_text("docs/plans/2026-06-08-existing-wrapper-lib-paths.md")
     submodule_lib_plan = read_text("docs/plans/2026-06-08-wrapper-submodule-lib-paths.md")
+    https_submodule_plan = read_text("docs/plans/2026-06-09-https-submodule-urls.md")
     gitignore = read_text(".gitignore")
 
     for text_name, text in (
@@ -165,15 +175,19 @@ def check_docs():
            "docs should describe filtering missing wrapper library paths")
     expect("mousex-getopt" in readme.lower() and "mousex-getopt" in vision.lower(),
            "docs should describe wrapper submodule library path alignment")
+    expect("https submodule" in readme.lower() and "https submodule" in vision.lower() and "https submodule" in security.lower(),
+           "docs should describe HTTPS submodule URL handling")
     expect("argument-preserving" in changes, "CHANGES should mention safe argv forwarding")
     expect("`PERL5LIB` path separator" in changes, "CHANGES should mention PERL5LIB path separator handling")
     expect("mousex-getopt" in changes.lower(), "CHANGES should mention MouseX::Getopt wrapper path handling")
     expect("existing local library paths" in changes.lower(), "CHANGES should mention existing local library path filtering")
+    expect("HTTPS submodule" in changes, "CHANGES should mention HTTPS submodule URL handling")
     expect("modern Perl" in changes, "CHANGES should mention modern Perl compatibility")
     expect("status: completed" in plan, "baseline plan should be marked completed")
     expect("status: completed" in path_plan, "PERL5LIB path separator plan should be marked completed")
     expect("status: completed" in existing_lib_plan, "existing wrapper lib path plan should be marked completed")
     expect("status: completed" in submodule_lib_plan, "wrapper submodule lib path plan should be marked completed")
+    expect("status: completed" in https_submodule_plan, "HTTPS submodule URL plan should be marked completed")
 
     for pattern in (".env", ".env.*", "downloads/", "*.mp4", "*.mp3", "*.m4a", "*.flv", "__pycache__/", "*.pyc"):
         expect(pattern in gitignore, ".gitignore should keep {} out of git".format(pattern))

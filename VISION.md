@@ -15,7 +15,7 @@ rules, licensing, and legacy runtime assumptions.
 Current baseline: `make check` runs `scripts/check-baseline.py` to verify Perl
 syntax, help output, compressed man page readability, safe wrapper argument
 forwarding, modern Perl compatibility, ignored downloaded media, credential and
-cookie boundaries, and content-access documentation.
+cookie boundaries, HTTPS submodule metadata, and content-access documentation.
 
 The current focus is:
 
@@ -26,6 +26,7 @@ Priority:
 - Keep `run.pl` building `PERL5LIB` with Perl's configured path separator
 - Keep wrapper submodule library paths aligned with `mouse`, `mousex-getopt`,
   and `mousex-nativetraits`
+- Keep HTTPS submodule URLs for dependency metadata
 - Keep wrapper `PERL5LIB` entries limited to existing local library paths before
   preserving external values
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
@@ -49,6 +50,7 @@ Contribution rules:
 - Document any behavior that changes content access or storage.
 - Preserve wrapper path separator handling when changing local dependency paths.
 - Keep submodule library path changes reflected in `run.pl` and the baseline.
+- Keep HTTPS submodule URL changes reflected in `.gitmodules` and the baseline.
 
 ## Security And Compliance
 

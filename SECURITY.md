@@ -29,6 +29,8 @@ Helpful reports include:
 - `run.pl` should forward arguments directly to `get_iplayer` without shell command construction from user input.
 - `run.pl` should preserve local dependency lookup using Perl's configured `PERL5LIB` path separator rather than shell-specific string assumptions.
 - `run.pl` should only prepend existing local library paths before preserving external `PERL5LIB` values.
+- `.gitmodules` should use HTTPS submodule URLs instead of unauthenticated
+  `git://` transport.
 - Run `make check` after changing Perl scripts, wrapper behavior, documentation, ignore rules, man page handling, or generated help output.
 - Review found authentication, token, or session-related code paths; changes in those areas should receive security-focused review before merge.
 - Review found network clients, sockets, web APIs, or service endpoints; changes in those areas should receive security-focused review before merge.
