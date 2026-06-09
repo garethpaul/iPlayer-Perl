@@ -31,6 +31,7 @@ Priority:
   preserving external values
 - Avoid duplicate local library paths when the environment already includes one
   of the wrapper paths
+- Treat trailing slash variants of wrapper-managed local paths as duplicates
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
 - Keep security policy visible
 - Avoid undocumented behavior around content access or downloads

@@ -4,6 +4,8 @@
 
 - Skipped duplicate local library paths when `PERL5LIB` already contains one of
   the wrapper-managed dependency paths.
+- Normalized wrapper-managed `PERL5LIB` entries during duplicate checks so
+  trailing slash variants are not prepended again.
 
 ## 2026-06-08
 

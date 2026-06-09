@@ -28,7 +28,7 @@ Helpful reports include:
 - `get_iplayer` is a legacy media-access CLI. Content access, downloads, cookies, credentials, proxy settings, and external player/transcoder commands should stay documented and tied to explicit user options.
 - `run.pl` should forward arguments directly to `get_iplayer` without shell command construction from user input.
 - `run.pl` should preserve local dependency lookup using Perl's configured `PERL5LIB` path separator rather than shell-specific string assumptions.
-- `run.pl` should only prepend existing local library paths before preserving external `PERL5LIB` values, and it should avoid duplicate local library paths already present in the environment.
+- `run.pl` should only prepend existing local library paths before preserving external `PERL5LIB` values, and it should avoid duplicate local library paths already present in the environment, including trailing slash variants.
 - `.gitmodules` should use HTTPS submodule URLs instead of unauthenticated
   `git://` transport.
 - Run `make check` after changing Perl scripts, wrapper behavior, documentation, ignore rules, man page handling, or generated help output.

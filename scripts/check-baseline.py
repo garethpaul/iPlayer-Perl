@@ -62,6 +62,7 @@ def check_required_files():
         "docs/plans/2026-06-08-wrapper-submodule-lib-paths.md",
         "docs/plans/2026-06-09-https-submodule-urls.md",
         "docs/plans/2026-06-09-perl5lib-dedupe.md",
+        "docs/plans/2026-06-09-perl5lib-trailing-slash-dedupe.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -117,10 +118,13 @@ def check_wrapper_guardrails():
     expect("$Config{path_sep}" in run_pl, "run.pl should read the configured PERL5LIB path separator")
     for local_lib in ("deps/mouse/lib", "deps/mousex-getopt/lib", "deps/mousex-nativetraits/lib"):
         expect(local_lib in run_pl, "run.pl should include local submodule library path {}".format(local_lib))
-    expect("my %existing_perl5lib_entries = ();" in run_pl and "split /\\Q$path_separator\\E/" in run_pl,
+    expect("sub normalized_path_entry" in run_pl and "$path =~ s{[\\\\/]+\\z}{};" in run_pl,
+           "run.pl should normalize path entries before duplicate comparison")
+    expect("my %existing_perl5lib_entries = ();" in run_pl and
+           "map { normalized_path_entry($_) => 1 } split /\\Q$path_separator\\E/" in run_pl,
            "run.pl should parse existing PERL5LIB entries with the configured path separator")
-    expect("my @perl5lib_entries = grep { -d $_ && !$existing_perl5lib_entries{$_} } @local_libs;" in run_pl,
-           "run.pl should only prepend existing local library paths that are not already in PERL5LIB")
+    expect("my @perl5lib_entries = grep { -d $_ && !$existing_perl5lib_entries{normalized_path_entry($_)} } @local_libs;" in run_pl,
+           "run.pl should only prepend existing local library paths that are not already in PERL5LIB after normalization")
     expect("if (@perl5lib_entries)" in run_pl and "$ENV{PERL5LIB} = join $path_separator, @perl5lib_entries;" in run_pl,
            "run.pl should avoid creating an empty PERL5LIB when no local or existing paths are available")
     expect('join ":"' not in run_pl, "run.pl should not hardcode Unix PERL5LIB separators")
@@ -156,6 +160,7 @@ def check_docs():
     submodule_lib_plan = read_text("docs/plans/2026-06-08-wrapper-submodule-lib-paths.md")
     https_submodule_plan = read_text("docs/plans/2026-06-09-https-submodule-urls.md")
     perl5lib_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-dedupe.md")
+    trailing_slash_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-trailing-slash-dedupe.md")
     gitignore = read_text(".gitignore")
 
     for text_name, text in (
@@ -168,6 +173,7 @@ def check_docs():
         expect("content access" in lowered or "content-access" in lowered, "{} should document content-access boundaries".format(text_name))
         expect("credential" in lowered or "cookie" in lowered, "{} should document credential or cookie handling".format(text_name))
         expect("download" in lowered, "{} should document local download behavior".format(text_name))
+        expect("trailing slash" in lowered, "{} should document trailing slash PERL5LIB dedupe".format(text_name))
 
     expect("scripts/check-baseline.py" in readme, "README should name the baseline checker")
     expect("perl -c" in readme, "README should document Perl syntax verification")
@@ -185,6 +191,7 @@ def check_docs():
            "duplicate local library paths" in vision.lower() and
            "duplicate local library paths" in security.lower(),
            "docs should describe duplicate local library path handling")
+    expect("trailing slash" in changes.lower(), "CHANGES should mention trailing slash PERL5LIB dedupe")
     expect("argument-preserving" in changes, "CHANGES should mention safe argv forwarding")
     expect("`PERL5LIB` path separator" in changes, "CHANGES should mention PERL5LIB path separator handling")
     expect("mousex-getopt" in changes.lower(), "CHANGES should mention MouseX::Getopt wrapper path handling")
@@ -198,6 +205,8 @@ def check_docs():
     expect("status: completed" in submodule_lib_plan, "wrapper submodule lib path plan should be marked completed")
     expect("status: completed" in https_submodule_plan, "HTTPS submodule URL plan should be marked completed")
     expect("status: completed" in perl5lib_dedupe_plan, "PERL5LIB dedupe plan should be marked completed")
+    expect("status: completed" in trailing_slash_dedupe_plan,
+           "PERL5LIB trailing slash dedupe plan should be marked completed")
 
     for pattern in (".env", ".env.*", "downloads/", "*.mp4", "*.mp3", "*.m4a", "*.flv", "__pycache__/", "*.pyc"):
         expect(pattern in gitignore, ".gitignore should keep {} out of git".format(pattern))
