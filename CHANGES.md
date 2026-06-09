@@ -8,6 +8,8 @@
   the wrapper-managed dependency paths.
 - Normalized wrapper-managed `PERL5LIB` entries during duplicate checks so
   trailing slash variants are not prepended again.
+- Compared existing `PERL5LIB` entries by canonical path when possible so
+  relative or symlinked local dependency paths are not prepended again.
 
 ## 2026-06-08
 
