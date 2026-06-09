@@ -61,6 +61,7 @@ def check_required_files():
         "docs/plans/2026-06-08-existing-wrapper-lib-paths.md",
         "docs/plans/2026-06-08-wrapper-submodule-lib-paths.md",
         "docs/plans/2026-06-09-https-submodule-urls.md",
+        "docs/plans/2026-06-09-make-gate-aliases.md",
         "docs/plans/2026-06-09-perl5lib-dedupe.md",
         "docs/plans/2026-06-09-perl5lib-trailing-slash-dedupe.md",
         "docs/readme-overview.svg",
@@ -159,9 +160,14 @@ def check_docs():
     existing_lib_plan = read_text("docs/plans/2026-06-08-existing-wrapper-lib-paths.md")
     submodule_lib_plan = read_text("docs/plans/2026-06-08-wrapper-submodule-lib-paths.md")
     https_submodule_plan = read_text("docs/plans/2026-06-09-https-submodule-urls.md")
+    make_gates_plan = read_text("docs/plans/2026-06-09-make-gate-aliases.md")
     perl5lib_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-dedupe.md")
     trailing_slash_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-trailing-slash-dedupe.md")
     gitignore = read_text(".gitignore")
+    makefile = read_text("Makefile")
+
+    expect(".PHONY: build check lint test" in makefile and "lint test build: check" in makefile,
+           "Makefile should expose lint, test, build, and check verification gates")
 
     for text_name, text in (
         ("README.md", readme),
@@ -175,6 +181,12 @@ def check_docs():
         expect("download" in lowered, "{} should document local download behavior".format(text_name))
         expect("trailing slash" in lowered, "{} should document trailing slash PERL5LIB dedupe".format(text_name))
 
+    expect("make lint" in readme and "make test" in readme and "make build" in readme,
+           "README should document the standard local verification gates")
+    expect("make lint" in vision and "make test" in vision and "make build" in vision,
+           "VISION should document the standard local verification gates")
+    expect("make lint" in changes and "make test" in changes and "make build" in changes,
+           "CHANGES should mention the standard local verification gates")
     expect("scripts/check-baseline.py" in readme, "README should name the baseline checker")
     expect("perl -c" in readme, "README should document Perl syntax verification")
     expect("path separator" in readme.lower() and "path separator" in vision.lower() and "path separator" in security.lower(),
@@ -204,6 +216,7 @@ def check_docs():
     expect("status: completed" in existing_lib_plan, "existing wrapper lib path plan should be marked completed")
     expect("status: completed" in submodule_lib_plan, "wrapper submodule lib path plan should be marked completed")
     expect("status: completed" in https_submodule_plan, "HTTPS submodule URL plan should be marked completed")
+    expect("status: completed" in make_gates_plan, "make gate aliases plan should be marked completed")
     expect("status: completed" in perl5lib_dedupe_plan, "PERL5LIB dedupe plan should be marked completed")
     expect("status: completed" in trailing_slash_dedupe_plan,
            "PERL5LIB trailing slash dedupe plan should be marked completed")

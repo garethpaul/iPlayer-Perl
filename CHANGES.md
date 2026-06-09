@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Added local `make lint`, `make test`, and `make build` gate aliases for the
+  static Perl wrapper baseline.
 - Skipped duplicate local library paths when `PERL5LIB` already contains one of
   the wrapper-managed dependency paths.
 - Normalized wrapper-managed `PERL5LIB` entries during duplicate checks so

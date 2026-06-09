@@ -26,7 +26,7 @@ Additional scan context:
 
 - Source directories: no top-level source directories detected
 - Dependency and build manifests: INSTALL
-- Entry points or build surfaces: `make check`, get_iplayer, run.pl
+- Entry points or build surfaces: `make lint`, `make test`, `make build`, `make check`, get_iplayer, run.pl
 - Test-looking files: no obvious test files detected
 
 ## Getting Started
@@ -35,13 +35,16 @@ Additional scan context:
 
 - Git
 - Perl
-- Python 3 for static verification with `make check`
+- Python 3 for static verification with `make lint`, `make test`, `make build`, and `make check`
 
 ### Setup
 
 ```bash
 git clone https://github.com/garethpaul/iPlayer-Perl.git
 cd iPlayer-Perl
+make lint
+make test
+make build
 make check
 ```
 
@@ -57,7 +60,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
-- `make check` runs `scripts/check-baseline.py`, which validates Perl syntax with `perl -c`, verifies help output, parses the compressed man page and SVG overview, checks safe wrapper argument forwarding, existing local library paths, local submodule library paths, duplicate local library paths including trailing slash variants, HTTPS submodule URLs, and `PERL5LIB` path separator handling, and enforces documentation guardrails.
+- `make lint`, `make test`, `make build`, and `make check` run `scripts/check-baseline.py`, which validates Perl syntax with `perl -c`, verifies help output, parses the compressed man page and SVG overview, checks safe wrapper argument forwarding, existing local library paths, local submodule library paths, duplicate local library paths including trailing slash variants, HTTPS submodule URLs, and `PERL5LIB` path separator handling, and enforces documentation guardrails.
+- The `lint`, `test`, and `build` targets intentionally alias the static
+  baseline so the standard local gate commands stay available while preserving
+  the same Perl syntax and wrapper checks as `make check`.
 - `perl -c run.pl`
 - `perl -c get_iplayer`
 
@@ -79,9 +85,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 ## Maintenance Notes
 
-- Run `make check` before pushing changes to `run.pl`, `get_iplayer`, docs, ignore rules, or generated help/manpage handling.
+- Run `make lint`, `make test`, `make build`, and `make check` before pushing changes to `run.pl`, `get_iplayer`, docs, ignore rules, or generated help/manpage handling.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
+- See `docs/plans/2026-06-09-make-gate-aliases.md` for the local gate alias guardrail.
 
 ## Contributing
 

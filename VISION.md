@@ -12,10 +12,11 @@ notes, license text, a man page, and the main `get_iplayer` script.
 The goal is to keep the tool understandable while respecting content access
 rules, licensing, and legacy runtime assumptions.
 
-Current baseline: `make check` runs `scripts/check-baseline.py` to verify Perl
-syntax, help output, compressed man page readability, safe wrapper argument
-forwarding, modern Perl compatibility, ignored downloaded media, credential and
-cookie boundaries, HTTPS submodule metadata, and content-access documentation.
+Current baseline: `make lint`, `make test`, `make build`, and `make check` run
+`scripts/check-baseline.py` to verify Perl syntax, help output, compressed man
+page readability, safe wrapper argument forwarding, modern Perl compatibility,
+ignored downloaded media, credential and cookie boundaries, HTTPS submodule
+metadata, and content-access documentation.
 
 The current focus is:
 
@@ -33,6 +34,8 @@ Priority:
   of the wrapper paths
 - Treat trailing slash variants of wrapper-managed local paths as duplicates
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
+- Keep `make lint`, `make test`, `make build`, and `make check` available as
+  local verification gates
 - Keep security policy visible
 - Avoid undocumented behavior around content access or downloads
 - Maintain submodule and script structure
@@ -48,7 +51,8 @@ Contribution rules:
 
 - One PR = one focused CLI, dependency, documentation, or upstream-sync change.
 - Preserve license and attribution files.
-- Run `make check` before pushing wrapper, script, documentation, or ignore-rule changes.
+- Run `make lint`, `make test`, `make build`, and `make check` before pushing
+  wrapper, script, documentation, or ignore-rule changes.
 - Do not add credential capture or hidden telemetry.
 - Document any behavior that changes content access or storage.
 - Preserve wrapper path separator handling when changing local dependency paths.
