@@ -11,7 +11,8 @@ resources, but no current hosted validation.
 ## Priorities
 
 1. Run the canonical `make check` gate on a current Linux runner.
-2. Pin third-party actions and Python while using the runner's system Perl.
+2. Pin third-party actions and Python while installing the packaged LWP module
+   stack required by the legacy script on the runner's system Perl.
 3. Enforce a read-only, bounded workflow contract from the baseline checker.
 4. Keep content access, cookies, downloads, submodule initialization, and
    external player or transcoder execution outside CI.
@@ -27,7 +28,8 @@ Files:
 
 Add push, pull-request, and manual triggers; read-only permissions; concurrency
 cancellation; a bounded `ubuntu-24.04` job; commit-pinned checkout and Python
-setup; and `make check`. Require those properties from the baseline.
+setup; Ubuntu's `libwww-perl` package; and `make check`. Require those
+properties from the baseline.
 
 ### Documentation
 
@@ -56,4 +58,5 @@ service integration coverage.
 ## Boundaries
 
 - Do not provide cookies, credentials, proxy configuration, or download paths.
-- Do not initialize optional dependency submodules or invoke network/media tools.
+- Do not initialize optional dependency submodules or invoke runtime
+  content-access or media tools.

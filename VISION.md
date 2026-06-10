@@ -40,7 +40,7 @@ Priority:
 - Keep `make lint`, `make test`, `make build`, and `make check` available as
   local verification gates
 - Keep hosted syntax, help-output, wrapper, and static-resource validation
-  pinned and read-only on Linux
+  pinned and read-only on Linux with the packaged LWP runtime modules
 - Keep security policy visible
 - Avoid undocumented behavior around content access or downloads
 - Maintain submodule and script structure

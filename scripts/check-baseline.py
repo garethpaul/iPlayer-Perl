@@ -247,7 +247,9 @@ def check_docs():
            "runs-on: ubuntu-24.04" in workflow and "timeout-minutes: 10" in workflow and
            "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in workflow and
            "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" in workflow and
-           'python-version: "3.12"' in workflow and "run: make check" in workflow,
+           'python-version: "3.12"' in workflow and
+           "sudo apt-get install --yes --no-install-recommends libwww-perl" in workflow and
+           "run: make check" in workflow,
            "Check workflow should stay pinned, read-only, and bounded")
 
     for pattern in (".env", ".env.*", "downloads/", "*.mp4", "*.mp3", "*.m4a", "*.flv", "__pycache__/", "*.pyc"):
