@@ -67,6 +67,9 @@ initializing optional submodules, accessing content, using cookies or
 credentials, downloading media, or invoking external players.
 
 - `make lint`, `make test`, `make build`, and `make check` run `scripts/check-baseline.py`, which validates Perl syntax with `perl -c`, verifies help output, parses the compressed man page and SVG overview, checks safe wrapper argument forwarding, existing local library paths, local submodule library paths, duplicate local library paths including trailing slash, root path, and canonical path variants, HTTPS submodule URLs, and `PERL5LIB` path separator handling, and enforces documentation guardrails.
+- The same gate runs `prove -v t`, executing the wrapper against a temporary
+  fake `get_iplayer` to verify exact argument forwarding and canonical
+  `PERL5LIB` duplicate suppression.
 - The `lint`, `test`, and `build` targets intentionally alias the static
   baseline so the standard local gate commands stay available while preserving
   the same Perl syntax and wrapper checks as `make check`.

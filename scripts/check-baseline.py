@@ -68,11 +68,13 @@ def check_required_files():
         "docs/plans/2026-06-09-perl5lib-canonical-dedupe.md",
         "docs/plans/2026-06-10-perl5lib-root-path-normalization.md",
         "docs/plans/2026-06-10-hosted-perl-validation.md",
+        "docs/plans/2026-06-10-wrapper-exec-tests.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
         "run.pl",
         "scripts/check-baseline.py",
+        "t/run-wrapper.t",
     ]
 
     for path in required:
@@ -175,12 +177,18 @@ def check_docs():
     canonical_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-canonical-dedupe.md")
     root_path_plan = read_text("docs/plans/2026-06-10-perl5lib-root-path-normalization.md")
     hosted_validation_plan = read_text("docs/plans/2026-06-10-hosted-perl-validation.md")
+    wrapper_exec_plan = read_text("docs/plans/2026-06-10-wrapper-exec-tests.md")
     workflow = read_text(".github/workflows/check.yml")
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
 
-    expect(".PHONY: build check lint test" in makefile and "lint test build: check" in makefile,
+    expect(".PHONY: build check lint test" in makefile and "lint test build: check" in makefile and
+           "check:\n\tpython3 scripts/check-baseline.py\n\tprove -v t" in makefile,
            "Makefile should expose lint, test, build, and check verification gates")
+    wrapper_test = read_text("t/run-wrapper.t")
+    for token in ("wrapper preserves every argument exactly", "canonical duplicate local library path appears once",
+                  "existing PERL5LIB entry is preserved", "wrapper exec exits successfully"):
+        expect(token in wrapper_test, "wrapper exec test should cover {}".format(token))
 
     for text_name, text in (
         ("README.md", readme),
@@ -243,6 +251,8 @@ def check_docs():
            "PERL5LIB root path normalization plan should be marked completed")
     expect("status: completed" in hosted_validation_plan and "make check" in hosted_validation_plan,
            "hosted Perl validation plan should be marked completed")
+    expect("status: completed" in wrapper_exec_plan and "prove -v t" in wrapper_exec_plan,
+           "wrapper exec test plan should be marked completed")
     expect("permissions:\n  contents: read" in workflow and "cancel-in-progress: true" in workflow and
            "runs-on: ubuntu-24.04" in workflow and "timeout-minutes: 10" in workflow and
            "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in workflow and
