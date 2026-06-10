@@ -39,6 +39,8 @@ Priority:
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
 - Keep `make lint`, `make test`, `make build`, and `make check` available as
   local verification gates
+- Keep hosted syntax, help-output, wrapper, and static-resource validation
+  pinned and read-only on Linux
 - Keep security policy visible
 - Avoid undocumented behavior around content access or downloads
 - Maintain submodule and script structure

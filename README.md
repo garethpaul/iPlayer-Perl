@@ -60,6 +60,11 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
+Pinned `ubuntu-24.04` GitHub Actions runs `make check` with system Perl and
+Python 3.12. It validates syntax, versioned help output, wrapper behavior, and
+static resources without initializing optional submodules, accessing content,
+using cookies or credentials, downloading media, or invoking external players.
+
 - `make lint`, `make test`, `make build`, and `make check` run `scripts/check-baseline.py`, which validates Perl syntax with `perl -c`, verifies help output, parses the compressed man page and SVG overview, checks safe wrapper argument forwarding, existing local library paths, local submodule library paths, duplicate local library paths including trailing slash, root path, and canonical path variants, HTTPS submodule URLs, and `PERL5LIB` path separator handling, and enforces documentation guardrails.
 - The `lint`, `test`, and `build` targets intentionally alias the static
   baseline so the standard local gate commands stay available while preserving

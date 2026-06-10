@@ -47,6 +47,7 @@ def run_command(args):
 def check_required_files():
     required = [
         ".gitignore",
+        ".github/workflows/check.yml",
         "CHANGES.md",
         "INSTALL",
         "LICENSE.txt",
@@ -66,6 +67,7 @@ def check_required_files():
         "docs/plans/2026-06-09-perl5lib-trailing-slash-dedupe.md",
         "docs/plans/2026-06-09-perl5lib-canonical-dedupe.md",
         "docs/plans/2026-06-10-perl5lib-root-path-normalization.md",
+        "docs/plans/2026-06-10-hosted-perl-validation.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -172,6 +174,8 @@ def check_docs():
     trailing_slash_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-trailing-slash-dedupe.md")
     canonical_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-canonical-dedupe.md")
     root_path_plan = read_text("docs/plans/2026-06-10-perl5lib-root-path-normalization.md")
+    hosted_validation_plan = read_text("docs/plans/2026-06-10-hosted-perl-validation.md")
+    workflow = read_text(".github/workflows/check.yml")
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
 
@@ -237,6 +241,14 @@ def check_docs():
            "PERL5LIB canonical path dedupe plan should be marked completed")
     expect("status: completed" in root_path_plan,
            "PERL5LIB root path normalization plan should be marked completed")
+    expect("status: completed" in hosted_validation_plan and "make check" in hosted_validation_plan,
+           "hosted Perl validation plan should be marked completed")
+    expect("permissions:\n  contents: read" in workflow and "cancel-in-progress: true" in workflow and
+           "runs-on: ubuntu-24.04" in workflow and "timeout-minutes: 10" in workflow and
+           "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in workflow and
+           "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" in workflow and
+           'python-version: "3.12"' in workflow and "run: make check" in workflow,
+           "Check workflow should stay pinned, read-only, and bounded")
 
     for pattern in (".env", ".env.*", "downloads/", "*.mp4", "*.mp3", "*.m4a", "*.flv", "__pycache__/", "*.pyc"):
         expect(pattern in gitignore, ".gitignore should keep {} out of git".format(pattern))

@@ -2,6 +2,8 @@
 
 ## 2026-06-10
 
+- Added pinned, read-only Linux hosted validation for Perl syntax, versioned
+  help output, wrapper guardrails, and static resources.
 - Preserved root path entries during `PERL5LIB` normalization so duplicate
   checks do not trim `/` or drive-root values into malformed comparison keys.
 
