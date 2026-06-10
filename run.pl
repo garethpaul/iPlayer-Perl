@@ -14,6 +14,7 @@ my @local_libs = (
 
 sub normalized_path_entry {
 	my ($path) = @_;
+	return $path if $path =~ m{\A(?:[A-Za-z]:)?[\\/]+\z};
 	$path =~ s{[\\/]+\z}{};
 	return $path;
 }

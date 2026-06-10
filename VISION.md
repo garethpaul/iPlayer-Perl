@@ -16,7 +16,8 @@ Current baseline: `make lint`, `make test`, `make build`, and `make check` run
 `scripts/check-baseline.py` to verify Perl syntax, help output, compressed man
 page readability, safe wrapper argument forwarding, modern Perl compatibility,
 ignored downloaded media, credential and cookie boundaries, HTTPS submodule
-metadata, canonical path wrapper dedupe, and content-access documentation.
+metadata, root path wrapper normalization, canonical path wrapper dedupe, and
+content-access documentation.
 
 The current focus is:
 
@@ -33,6 +34,7 @@ Priority:
 - Avoid duplicate local library paths when the environment already includes one
   of the wrapper paths
 - Treat trailing slash variants of wrapper-managed local paths as duplicates
+- Preserve root path entries while normalizing `PERL5LIB` for duplicate checks
 - Treat canonical path variants of wrapper-managed local paths as duplicates
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
 - Keep `make lint`, `make test`, `make build`, and `make check` available as

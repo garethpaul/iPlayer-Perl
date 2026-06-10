@@ -65,6 +65,7 @@ def check_required_files():
         "docs/plans/2026-06-09-perl5lib-dedupe.md",
         "docs/plans/2026-06-09-perl5lib-trailing-slash-dedupe.md",
         "docs/plans/2026-06-09-perl5lib-canonical-dedupe.md",
+        "docs/plans/2026-06-10-perl5lib-root-path-normalization.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -121,8 +122,10 @@ def check_wrapper_guardrails():
     expect("$Config{path_sep}" in run_pl, "run.pl should read the configured PERL5LIB path separator")
     for local_lib in ("deps/mouse/lib", "deps/mousex-getopt/lib", "deps/mousex-nativetraits/lib"):
         expect(local_lib in run_pl, "run.pl should include local submodule library path {}".format(local_lib))
-    expect("sub normalized_path_entry" in run_pl and "$path =~ s{[\\\\/]+\\z}{};" in run_pl,
-           "run.pl should normalize path entries before duplicate comparison")
+    expect("sub normalized_path_entry" in run_pl and
+           "return $path if $path =~ m{\\A(?:[A-Za-z]:)?[\\\\/]+\\z};" in run_pl and
+           "$path =~ s{[\\\\/]+\\z}{};" in run_pl,
+           "run.pl should normalize path entries before duplicate comparison while preserving root path entries")
     expect("sub comparable_path_entry" in run_pl and "abs_path($normalized_path)" in run_pl,
            "run.pl should compare existing path entries by canonical path when possible")
     expect("my %existing_perl5lib_entries = ();" in run_pl and
@@ -168,6 +171,7 @@ def check_docs():
     perl5lib_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-dedupe.md")
     trailing_slash_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-trailing-slash-dedupe.md")
     canonical_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-canonical-dedupe.md")
+    root_path_plan = read_text("docs/plans/2026-06-10-perl5lib-root-path-normalization.md")
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
 
@@ -186,6 +190,7 @@ def check_docs():
         expect("download" in lowered, "{} should document local download behavior".format(text_name))
         expect("trailing slash" in lowered, "{} should document trailing slash PERL5LIB dedupe".format(text_name))
         expect("canonical path" in lowered, "{} should document canonical path PERL5LIB dedupe".format(text_name))
+        expect("root path" in lowered, "{} should document root path PERL5LIB normalization".format(text_name))
 
     expect("make lint" in readme and "make test" in readme and "make build" in readme,
            "README should document the standard local verification gates")
@@ -210,6 +215,7 @@ def check_docs():
            "duplicate local library paths" in security.lower(),
            "docs should describe duplicate local library path handling")
     expect("canonical path" in changes.lower(), "CHANGES should mention canonical path PERL5LIB dedupe")
+    expect("root path" in changes.lower(), "CHANGES should mention root path PERL5LIB normalization")
     expect("trailing slash" in changes.lower(), "CHANGES should mention trailing slash PERL5LIB dedupe")
     expect("argument-preserving" in changes, "CHANGES should mention safe argv forwarding")
     expect("`PERL5LIB` path separator" in changes, "CHANGES should mention PERL5LIB path separator handling")
@@ -229,6 +235,8 @@ def check_docs():
            "PERL5LIB trailing slash dedupe plan should be marked completed")
     expect("status: completed" in canonical_dedupe_plan,
            "PERL5LIB canonical path dedupe plan should be marked completed")
+    expect("status: completed" in root_path_plan,
+           "PERL5LIB root path normalization plan should be marked completed")
 
     for pattern in (".env", ".env.*", "downloads/", "*.mp4", "*.mp3", "*.m4a", "*.flv", "__pycache__/", "*.pyc"):
         expect(pattern in gitignore, ".gitignore should keep {} out of git".format(pattern))

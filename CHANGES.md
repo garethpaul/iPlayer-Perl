@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-10
+
+- Preserved root path entries during `PERL5LIB` normalization so duplicate
+  checks do not trim `/` or drive-root values into malformed comparison keys.
+
 ## 2026-06-09
 
 - Added local `make lint`, `make test`, and `make build` gate aliases for the
