@@ -15,6 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FAILURES = []
+CI_PLAN = "docs/plans/2026-06-10-ci-baseline.md"
 
 
 def rel(path):
@@ -47,6 +48,7 @@ def run_command(args):
 def check_required_files():
     required = [
         ".gitignore",
+        ".github/CODEOWNERS",
         ".github/workflows/check.yml",
         "CHANGES.md",
         "INSTALL",
@@ -68,6 +70,7 @@ def check_required_files():
         "docs/plans/2026-06-09-perl5lib-canonical-dedupe.md",
         "docs/plans/2026-06-10-perl5lib-root-path-normalization.md",
         "docs/plans/2026-06-10-hosted-perl-validation.md",
+        CI_PLAN,
         "docs/plans/2026-06-10-wrapper-exec-tests.md",
         "docs/readme-overview.svg",
         "get_iplayer",
@@ -177,6 +180,7 @@ def check_docs():
     canonical_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-canonical-dedupe.md")
     root_path_plan = read_text("docs/plans/2026-06-10-perl5lib-root-path-normalization.md")
     hosted_validation_plan = read_text("docs/plans/2026-06-10-hosted-perl-validation.md")
+    ci_plan = read_text(CI_PLAN)
     wrapper_exec_plan = read_text("docs/plans/2026-06-10-wrapper-exec-tests.md")
     workflow = read_text(".github/workflows/check.yml")
     gitignore = read_text(".gitignore")
@@ -251,16 +255,24 @@ def check_docs():
            "PERL5LIB root path normalization plan should be marked completed")
     expect("status: completed" in hosted_validation_plan and "make check" in hosted_validation_plan,
            "hosted Perl validation plan should be marked completed")
+    expect("status: completed" in ci_plan and "make check" in ci_plan,
+           "initial CI baseline plan should be marked completed")
     expect("status: completed" in wrapper_exec_plan and "prove -v t" in wrapper_exec_plan,
            "wrapper exec test plan should be marked completed")
     expect("permissions:\n  contents: read" in workflow and "cancel-in-progress: true" in workflow and
            "runs-on: ubuntu-24.04" in workflow and "timeout-minutes: 10" in workflow and
            "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in workflow and
+           "persist-credentials: false" in workflow and
            "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" in workflow and
            'python-version: "3.12"' in workflow and
            "sudo apt-get install --yes --no-install-recommends libwww-perl" in workflow and
            "run: make check" in workflow,
            "Check workflow should stay pinned, read-only, and bounded")
+    expect(read_text(".github/CODEOWNERS").strip() == "* @garethpaul",
+           "CODEOWNERS should assign repository-wide ownership")
+    workflow_files = sorted(str(path.relative_to(ROOT)) for path in (ROOT / ".github/workflows").rglob("*") if path.is_file())
+    expect(workflow_files == [".github/workflows/check.yml"],
+           "check.yml should be the sole hosted workflow")
 
     for pattern in (".env", ".env.*", "downloads/", "*.mp4", "*.mp3", "*.m4a", "*.flv", "__pycache__/", "*.pyc"):
         expect(pattern in gitignore, ".gitignore should keep {} out of git".format(pattern))

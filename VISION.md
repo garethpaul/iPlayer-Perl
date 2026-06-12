@@ -59,6 +59,7 @@ Contribution rules:
 - Preserve license and attribution files.
 - Run `make lint`, `make test`, `make build`, and `make check` before pushing
   wrapper, script, documentation, or ignore-rule changes.
+  GitHub Actions should run the same static baseline for pushed changes.
 - Do not add credential capture or hidden telemetry.
 - Document any behavior that changes content access or storage.
 - Preserve wrapper path separator handling when changing local dependency paths.
