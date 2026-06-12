@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-12
+
+- Documented radio mode inspection, ordered higher-quality AAC preferences, and
+  the HTTP proxy/RTMP endpoint boundary with implementation-backed checks.
+
 ## 2026-06-10
 
 - Added core-Perl wrapper exec tests for exact argument forwarding and

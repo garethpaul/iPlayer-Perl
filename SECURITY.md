@@ -26,6 +26,10 @@ Helpful reports include:
 
 - This repository appears to be a public sample, documentation, or utility project. The active security scope is the code and documentation on the default branch.
 - `get_iplayer` is a legacy media-access CLI. Content access, downloads, cookies, credentials, proxy settings, and external player/transcoder commands should stay documented and tied to explicit user options.
+- Radio bitrate and proxy guidance must not promise stream availability or
+  treat an RTMP endpoint as an HTTP proxy. Network routing and VPN policy remain
+  outside the wrapper; users remain responsible for applicable service terms
+  and law.
 - `run.pl` should forward arguments directly to `get_iplayer` without shell command construction from user input.
 - `run.pl` should preserve local dependency lookup using Perl's configured `PERL5LIB` path separator rather than shell-specific string assumptions.
 - `run.pl` should only prepend existing local library paths before preserving external `PERL5LIB` values, and it should avoid duplicate local library paths already present in the environment, including trailing slash, root path, and canonical path variants.

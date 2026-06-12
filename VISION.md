@@ -52,6 +52,7 @@ Next priorities:
 - Verify the CLI help path and basic script execution
 - Clarify upstream relationship and update policy
 - Keep content-access behavior aligned with applicable terms and user controls
+- Keep radio bitrate guidance tied to implemented modes without promising availability
 
 Contribution rules:
 

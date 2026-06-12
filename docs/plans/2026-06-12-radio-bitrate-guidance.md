@@ -1,6 +1,6 @@
 # Radio Bitrate Guidance
 
-status: planned
+status: completed
 
 ## Context
 
@@ -9,7 +9,7 @@ RTMP endpoint such as `localhost:1935` can be used as a browser-style proxy.
 This repository version supports ordered `--radiomode` fallbacks, HTTP proxy
 URLs through `--proxy`, and the optional `--partial-proxy` behavior.
 
-## Scope
+## Completed Scope
 
 - Document inspecting advertised radio modes before recording.
 - Document an ordered higher-quality AAC mode preference without promising a
@@ -28,3 +28,6 @@ URLs through `--proxy`, and the optional `--partial-proxy` behavior.
 - `make check`
 - `perl -c get_iplayer`
 - `git diff --check`
+- Mutation results: changing the documented `--radiomode` example or removing
+  the implementation's `radiomode|amode` option definition was rejected by
+  `scripts/check-baseline.py`.

@@ -72,6 +72,7 @@ def check_required_files():
         "docs/plans/2026-06-10-hosted-perl-validation.md",
         CI_PLAN,
         "docs/plans/2026-06-10-wrapper-exec-tests.md",
+        "docs/plans/2026-06-12-radio-bitrate-guidance.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -166,6 +167,8 @@ def check_wrapper_guardrails():
 
 def check_docs():
     readme = read_text("README.md")
+    legacy_readme = read_text("README")
+    get_iplayer = read_text("get_iplayer")
     vision = read_text("VISION.md")
     security = read_text("SECURITY.md")
     changes = read_text("CHANGES.md")
@@ -182,6 +185,7 @@ def check_docs():
     hosted_validation_plan = read_text("docs/plans/2026-06-10-hosted-perl-validation.md")
     ci_plan = read_text(CI_PLAN)
     wrapper_exec_plan = read_text("docs/plans/2026-06-10-wrapper-exec-tests.md")
+    radio_guidance_plan = read_text("docs/plans/2026-06-12-radio-bitrate-guidance.md")
     workflow = read_text(".github/workflows/check.yml")
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
@@ -240,6 +244,16 @@ def check_docs():
     expect("HTTPS submodule" in changes, "CHANGES should mention HTTPS submodule URL handling")
     expect("duplicate local library paths" in changes.lower(), "CHANGES should mention duplicate PERL5LIB path handling")
     expect("modern Perl" in changes, "CHANGES should mention modern Perl compatibility")
+    for token in ("## Radio recording quality", "--type=radio --info", "--radiomode=flashaachigh,flashaacstd,iphone",
+                  "## Proxy notes", '--proxy "http://HOST:PORT"', "--partial-proxy", "localhost:1935",
+                  "cannot guarantee a particular bitrate"):
+        expect(token in legacy_readme, "legacy README should preserve radio guidance token {}".format(token))
+    expect('info\t\t=> [ 2, "i|info!"' in get_iplayer and
+           'radiomode\t=> [ 1, "radiomode|amode=s"' in get_iplayer and
+           'partialproxy\t=> [ 1, "partial-proxy!"' in get_iplayer and
+           'proxy\t\t=> [ 0, "proxy|p=s"' in get_iplayer and
+           "expand_list($mlist, 'best', 'flashaachigh,flashaacstd,iphone,flashaudio,realaudio,flashaaclow,wma')" in get_iplayer,
+           "get_iplayer should implement every documented radio and proxy option")
     expect("status: completed" in plan, "baseline plan should be marked completed")
     expect("status: completed" in path_plan, "PERL5LIB path separator plan should be marked completed")
     expect("status: completed" in existing_lib_plan, "existing wrapper lib path plan should be marked completed")
@@ -259,6 +273,8 @@ def check_docs():
            "initial CI baseline plan should be marked completed")
     expect("status: completed" in wrapper_exec_plan and "prove -v t" in wrapper_exec_plan,
            "wrapper exec test plan should be marked completed")
+    expect("status: completed" in radio_guidance_plan and "mutation" in radio_guidance_plan.lower(),
+           "radio bitrate guidance plan should record completed mutation verification")
     expect("permissions:\n  contents: read" in workflow and "cancel-in-progress: true" in workflow and
            "runs-on: ubuntu-24.04" in workflow and "timeout-minutes: 10" in workflow and
            "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in workflow and
