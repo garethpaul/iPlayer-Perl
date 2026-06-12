@@ -58,6 +58,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Submodule URLs use HTTPS mirrors so dependency checkout metadata does not rely
   on unauthenticated `git://` transport.
 - This tool can download or stream media, use cookies or credentials, and invoke external players/transcoders depending on user-supplied options. Keep content access explicit and user-controlled.
+- The legacy [`README`](README) documents radio mode inspection, ordered
+  `--radiomode` preferences, and HTTP `--proxy`/`--partial-proxy` usage. It does
+  not guarantee a bitrate or geographic availability, and an RTMP endpoint is
+  not an HTTP proxy.
 
 ## Testing and Verification
 
