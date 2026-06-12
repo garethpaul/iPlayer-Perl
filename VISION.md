@@ -39,6 +39,7 @@ Priority:
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
 - Keep `make lint`, `make test`, `make build`, and `make check` available as
   local verification gates
+- Keep GitHub Actions running the static `make check` baseline
 - Keep security policy visible
 - Avoid undocumented behavior around content access or downloads
 - Maintain submodule and script structure
@@ -56,6 +57,7 @@ Contribution rules:
 - Preserve license and attribution files.
 - Run `make lint`, `make test`, `make build`, and `make check` before pushing
   wrapper, script, documentation, or ignore-rule changes.
+  GitHub Actions should run the same static baseline for pushed changes.
 - Do not add credential capture or hidden telemetry.
 - Document any behavior that changes content access or storage.
 - Preserve wrapper path separator handling when changing local dependency paths.

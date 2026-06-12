@@ -12,6 +12,7 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 ## Repository Contents
 
 - `CHANGES.md` - recent maintenance changes
+- `.github/workflows/check.yml` - CI baseline that runs the static Make gate
 - `Makefile` - local static verification entry point
 - `README.md` - project overview and local usage notes
 - `README`
@@ -66,6 +67,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   the same Perl syntax and wrapper checks as `make check`.
 - `perl -c run.pl`
 - `perl -c get_iplayer`
+- GitHub Actions runs the static `make check` gate through
+  `.github/workflows/check.yml` on pushes and pull requests.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -88,6 +91,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Run `make lint`, `make test`, `make build`, and `make check` before pushing changes to `run.pl`, `get_iplayer`, docs, ignore rules, or generated help/manpage handling.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
+- See `docs/plans/2026-06-10-ci-baseline.md` for the lightweight CI baseline.
 - See `docs/plans/2026-06-09-make-gate-aliases.md` for the local gate alias guardrail.
 
 ## Contributing

@@ -47,6 +47,7 @@ def run_command(args):
 def check_required_files():
     required = [
         ".gitignore",
+        ".github/workflows/check.yml",
         "CHANGES.md",
         "INSTALL",
         "LICENSE.txt",
@@ -66,6 +67,7 @@ def check_required_files():
         "docs/plans/2026-06-09-perl5lib-trailing-slash-dedupe.md",
         "docs/plans/2026-06-09-perl5lib-canonical-dedupe.md",
         "docs/plans/2026-06-10-perl5lib-root-path-normalization.md",
+        "docs/plans/2026-06-10-ci-baseline.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -172,11 +174,15 @@ def check_docs():
     trailing_slash_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-trailing-slash-dedupe.md")
     canonical_dedupe_plan = read_text("docs/plans/2026-06-09-perl5lib-canonical-dedupe.md")
     root_path_plan = read_text("docs/plans/2026-06-10-perl5lib-root-path-normalization.md")
+    ci_plan = read_text("docs/plans/2026-06-10-ci-baseline.md")
+    workflow = read_text(".github/workflows/check.yml")
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
 
     expect(".PHONY: build check lint test" in makefile and "lint test build: check" in makefile,
            "Makefile should expose lint, test, build, and check verification gates")
+    expect("actions/checkout@v4" in workflow and "actions/setup-python@v5" in workflow and "make check" in workflow,
+           "GitHub Actions should run make check on a supported Python version")
 
     for text_name, text in (
         ("README.md", readme),
@@ -191,6 +197,7 @@ def check_docs():
         expect("trailing slash" in lowered, "{} should document trailing slash PERL5LIB dedupe".format(text_name))
         expect("canonical path" in lowered, "{} should document canonical path PERL5LIB dedupe".format(text_name))
         expect("root path" in lowered, "{} should document root path PERL5LIB normalization".format(text_name))
+        expect("github actions" in lowered, "{} should document the GitHub Actions baseline".format(text_name))
 
     expect("make lint" in readme and "make test" in readme and "make build" in readme,
            "README should document the standard local verification gates")
@@ -224,6 +231,7 @@ def check_docs():
     expect("HTTPS submodule" in changes, "CHANGES should mention HTTPS submodule URL handling")
     expect("duplicate local library paths" in changes.lower(), "CHANGES should mention duplicate PERL5LIB path handling")
     expect("modern Perl" in changes, "CHANGES should mention modern Perl compatibility")
+    expect("GitHub Actions" in changes, "CHANGES should mention the GitHub Actions baseline")
     expect("status: completed" in plan, "baseline plan should be marked completed")
     expect("status: completed" in path_plan, "PERL5LIB path separator plan should be marked completed")
     expect("status: completed" in existing_lib_plan, "existing wrapper lib path plan should be marked completed")
@@ -237,6 +245,7 @@ def check_docs():
            "PERL5LIB canonical path dedupe plan should be marked completed")
     expect("status: completed" in root_path_plan,
            "PERL5LIB root path normalization plan should be marked completed")
+    expect("status: completed" in ci_plan, "CI baseline plan should be marked completed")
 
     for pattern in (".env", ".env.*", "downloads/", "*.mp4", "*.mp3", "*.m4a", "*.flv", "__pycache__/", "*.pyc"):
         expect(pattern in gitignore, ".gitignore should keep {} out of git".format(pattern))

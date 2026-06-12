@@ -2,6 +2,7 @@
 
 ## 2026-06-10
 
+- Added GitHub Actions CI that runs the static `make check` baseline.
 - Preserved root path entries during `PERL5LIB` normalization so duplicate
   checks do not trim `/` or drive-root values into malformed comparison keys.
 
