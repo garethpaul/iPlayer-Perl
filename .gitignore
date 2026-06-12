@@ -2,3 +2,32 @@
 \#*
 .\#*
 *.swp
+*.tmp
+*.part
+*.partial
+
+# Local Perl/build artifacts
+blib/
+_build/
+Build
+Makefile.old
+*.bak
+*.orig
+
+# Local configuration and downloaded media
+.env
+.env.*
+local/
+downloads/
+*.mp3
+*.mp4
+*.m4a
+*.flv
+*.mov
+*.wmv
+*.srt
+*.ttml
+
+# Python verification
+__pycache__/
+*.pyc
