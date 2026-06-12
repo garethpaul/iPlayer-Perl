@@ -36,10 +36,12 @@ Priority:
 - Treat trailing slash variants of wrapper-managed local paths as duplicates
 - Preserve root path entries while normalizing `PERL5LIB` for duplicate checks
 - Treat canonical path variants of wrapper-managed local paths as duplicates
+- Execute isolated wrapper handoff tests for arguments and `PERL5LIB`
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
 - Keep `make lint`, `make test`, `make build`, and `make check` available as
   local verification gates
-- Keep GitHub Actions running the static `make check` baseline
+- Keep hosted syntax, help-output, wrapper, and static-resource validation
+  pinned and read-only on Linux with the packaged LWP runtime modules
 - Keep security policy visible
 - Avoid undocumented behavior around content access or downloads
 - Maintain submodule and script structure

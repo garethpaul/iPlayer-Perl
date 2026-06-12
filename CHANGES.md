@@ -2,7 +2,10 @@
 
 ## 2026-06-10
 
-- Added GitHub Actions CI that runs the static `make check` baseline.
+- Added core-Perl wrapper exec tests for exact argument forwarding and
+  canonical `PERL5LIB` duplicate suppression.
+- Added pinned, read-only Linux hosted validation with packaged LWP modules for
+  Perl syntax, versioned help output, wrapper guardrails, and static resources.
 - Preserved root path entries during `PERL5LIB` normalization so duplicate
   checks do not trim `/` or drive-root values into malformed comparison keys.
 
