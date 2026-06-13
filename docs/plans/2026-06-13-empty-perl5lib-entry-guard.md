@@ -1,6 +1,6 @@
 # Empty PERL5LIB Entry Guard
 
-status: planned
+status: completed
 
 ## Context
 
@@ -25,3 +25,25 @@ directory to Perl's module search path before the wrapper execs `get_iplayer`.
 
 - All Make gates, `prove -v t`, Perl/Python syntax, mutation tests, and diff
   checks.
+
+## Work Completed
+
+- Parsed the inherited `PERL5LIB` with the configured platform separator,
+  removed empty entries, rebuilt the environment from validated entries, and
+  unset the variable when no validated entries remain.
+- Preserved non-empty entry order, canonical duplicate suppression, existing
+  local dependency precedence, and exact wrapper argument forwarding.
+- Added TAP and static contracts plus user-facing security and maintenance
+  documentation for the empty-entry boundary.
+
+## Verification Completed
+
+- `make lint`, `make test`, `make build`, and `make check` passed.
+- `prove -v t`, `perl -c run.pl`, `perl -c t/run-wrapper.t`, and
+  `python3 -m py_compile scripts/check-baseline.py` passed.
+- Six hostile mutations were rejected: removing empty-entry filtering,
+  removing trailing-empty split preservation, restoring raw environment
+  appending, removing the TAP assertion, reverting plan completion, and
+  removing recorded verification evidence.
+- An additional review-driven mutation that removed the all-empty cleanup was
+  rejected by the focused TAP regression.

@@ -29,15 +29,20 @@ sub comparable_path_entry {
 }
 
 my $path_separator = $Config{path_sep} || ":";
+my @existing_perl5lib_entries = ();
 my %existing_perl5lib_entries = ();
 if (defined $ENV{PERL5LIB} && length $ENV{PERL5LIB}) {
-	%existing_perl5lib_entries = map { comparable_path_entry($_) => 1 } split /\Q$path_separator\E/, $ENV{PERL5LIB};
+	@existing_perl5lib_entries = grep { length $_ } split /\Q$path_separator\E/, $ENV{PERL5LIB}, -1;
+	%existing_perl5lib_entries = map { comparable_path_entry($_) => 1 } @existing_perl5lib_entries;
 }
 
 my @perl5lib_entries = grep { -d $_ && !$existing_perl5lib_entries{comparable_path_entry($_)} } @local_libs;
-push @perl5lib_entries, $ENV{PERL5LIB} if defined $ENV{PERL5LIB} && length $ENV{PERL5LIB};
+push @perl5lib_entries, @existing_perl5lib_entries;
 if (@perl5lib_entries) {
 	$ENV{PERL5LIB} = join $path_separator, @perl5lib_entries;
+}
+else {
+	delete $ENV{PERL5LIB};
 }
 
 my $command = "$Bin/get_iplayer";

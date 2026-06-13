@@ -4,7 +4,7 @@ use warnings;
 use Config qw(%Config);
 use Cwd qw(abs_path);
 use File::Copy qw(copy);
-use File::Path qw(make_path);
+use File::Path qw(make_path remove_tree);
 use File::Spec;
 use File::Temp qw(tempdir);
 use FindBin qw($Bin);
@@ -24,7 +24,7 @@ print {$handle} <<'FAKE';
 #!/usr/bin/env perl
 use strict;
 use warnings;
-print "PERL5LIB=$ENV{PERL5LIB}\n";
+print "PERL5LIB=", defined $ENV{PERL5LIB} ? $ENV{PERL5LIB} : "<unset>", "\n";
 print join("\n", map { "ARG=" . length($_) . ":$_" } @ARGV), "\n";
 FAKE
 close $handle or die "close fake get_iplayer: $!";
@@ -32,7 +32,8 @@ chmod 0755, $fake or die "chmod fake get_iplayer: $!";
 
 my $existing = File::Spec->catdir($temp, "existing", "lib");
 my $duplicate = File::Spec->catdir($temp, "deps", "mouse", "lib") . "/";
-local $ENV{PERL5LIB} = join($Config{path_sep} || ":", $duplicate, $existing);
+my $separator = $Config{path_sep} || ":";
+local $ENV{PERL5LIB} = join($separator, "", $duplicate, "", $existing, "");
 
 my @arguments = ("--search", "two words", "--pid=abc-123", "");
 open my $output, "-|", $^X, File::Spec->catfile($temp, "run.pl"), @arguments
@@ -50,9 +51,22 @@ is_deeply(
 );
 
 my (undef, $perl5lib) = split /=/, $perl5lib_line, 2;
-my @entries = split /\Q@{[$Config{path_sep} || ":"]}\E/, $perl5lib;
+my @entries = split /\Q$separator\E/, $perl5lib, -1;
+is(scalar(grep { !length $_ } @entries), 0, "empty PERL5LIB entries are removed");
 is(scalar(grep { abs_path($_) eq abs_path(File::Spec->catdir($temp, "deps", "mouse", "lib")) } @entries), 1,
 	"canonical duplicate local library path appears once");
 ok(scalar(grep { abs_path($_) eq abs_path($existing) } @entries), "existing PERL5LIB entry is preserved");
+
+remove_tree(File::Spec->catdir($temp, "deps"));
+{
+	local $ENV{PERL5LIB} = join($separator, "", "");
+	open my $empty_output, "-|", $^X, File::Spec->catfile($temp, "run.pl")
+		or die "run wrapper with empty PERL5LIB: $!";
+	my @empty_lines = <$empty_output>;
+	close $empty_output;
+	is($? >> 8, 0, "wrapper with only empty PERL5LIB entries exits successfully");
+	chomp @empty_lines;
+	is($empty_lines[0], "PERL5LIB=<unset>", "PERL5LIB is unset when no validated entries remain");
+}
 
 done_testing;

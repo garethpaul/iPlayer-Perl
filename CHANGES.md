@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-13
+
+- Removed empty `PERL5LIB` entries before the wrapper rebuilds the module search
+  path, preventing the launch directory from being added implicitly.
+
 ## 2026-06-12
 
 - Documented radio mode inspection, ordered higher-quality AAC preferences, and

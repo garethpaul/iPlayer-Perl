@@ -54,7 +54,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Running or Using the Project
 
 - Run `./get_iplayer --help` to inspect command-line options, then use the options relevant to the BBC programme or radio workflow you are testing.
-- Use `./run.pl --help` when exercising the wrapper. It forwards arguments directly to `get_iplayer` without invoking a shell and builds `PERL5LIB` with Perl's configured path separator. The wrapper prepends existing local library paths for the `mouse`, `mousex-getopt`, and `mousex-nativetraits` submodules before preserving any existing `PERL5LIB` value, while avoiding duplicate local library paths already present in the environment, including trailing slash, root path, and canonical path variants.
+- Use `./run.pl --help` when exercising the wrapper. It forwards arguments directly to `get_iplayer` without invoking a shell and builds `PERL5LIB` with Perl's configured path separator. The wrapper prepends existing local library paths for the `mouse`, `mousex-getopt`, and `mousex-nativetraits` submodules before preserving existing entries, while removing empty PERL5LIB entries and avoiding duplicate local library paths already present in the environment, including trailing slash, root path, and canonical path variants.
 - Submodule URLs use HTTPS mirrors so dependency checkout metadata does not rely
   on unauthenticated `git://` transport.
 - This tool can download or stream media, use cookies or credentials, and invoke external players/transcoders depending on user-supplied options. Keep content access explicit and user-controlled.
@@ -71,7 +71,7 @@ syntax, versioned help output, wrapper behavior, and static resources without
 initializing optional submodules, accessing content, using cookies or
 credentials, downloading media, or invoking external players.
 
-- `make lint`, `make test`, `make build`, and `make check` run `scripts/check-baseline.py`, which validates Perl syntax with `perl -c`, verifies help output, parses the compressed man page and SVG overview, checks safe wrapper argument forwarding, existing local library paths, local submodule library paths, duplicate local library paths including trailing slash, root path, and canonical path variants, HTTPS submodule URLs, and `PERL5LIB` path separator handling, and enforces documentation guardrails.
+- `make lint`, `make test`, `make build`, and `make check` run `scripts/check-baseline.py`, which validates Perl syntax with `perl -c`, verifies help output, parses the compressed man page and SVG overview, checks safe wrapper argument forwarding, empty PERL5LIB entry filtering, existing local library paths, local submodule library paths, duplicate local library paths including trailing slash, root path, and canonical path variants, HTTPS submodule URLs, and `PERL5LIB` path separator handling, and enforces documentation guardrails.
 - The same gate runs `prove -v t`, executing the wrapper against a temporary
   fake `get_iplayer` to verify exact argument forwarding and canonical
   `PERL5LIB` duplicate suppression.

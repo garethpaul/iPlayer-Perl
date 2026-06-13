@@ -73,6 +73,7 @@ def check_required_files():
         CI_PLAN,
         "docs/plans/2026-06-10-wrapper-exec-tests.md",
         "docs/plans/2026-06-12-radio-bitrate-guidance.md",
+        "docs/plans/2026-06-13-empty-perl5lib-entry-guard.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -136,13 +137,19 @@ def check_wrapper_guardrails():
            "run.pl should normalize path entries before duplicate comparison while preserving root path entries")
     expect("sub comparable_path_entry" in run_pl and "abs_path($normalized_path)" in run_pl,
            "run.pl should compare existing path entries by canonical path when possible")
-    expect("my %existing_perl5lib_entries = ();" in run_pl and
-           "map { comparable_path_entry($_) => 1 } split /\\Q$path_separator\\E/" in run_pl,
-           "run.pl should parse existing PERL5LIB entries with the configured path separator")
+    expect("my @existing_perl5lib_entries = ();" in run_pl and
+           "grep { length $_ } split /\\Q$path_separator\\E/, $ENV{PERL5LIB}, -1" in run_pl and
+           "map { comparable_path_entry($_) => 1 } @existing_perl5lib_entries" in run_pl,
+           "run.pl should parse existing PERL5LIB entries and remove empty entries")
     expect("my @perl5lib_entries = grep { -d $_ && !$existing_perl5lib_entries{comparable_path_entry($_)} } @local_libs;" in run_pl,
            "run.pl should only prepend existing local library paths that are not already in PERL5LIB after canonical comparison")
+    expect("push @perl5lib_entries, @existing_perl5lib_entries;" in run_pl and
+           "push @perl5lib_entries, $ENV{PERL5LIB}" not in run_pl,
+           "run.pl should rebuild PERL5LIB from validated entries instead of appending the raw value")
     expect("if (@perl5lib_entries)" in run_pl and "$ENV{PERL5LIB} = join $path_separator, @perl5lib_entries;" in run_pl,
            "run.pl should avoid creating an empty PERL5LIB when no local or existing paths are available")
+    expect("else {\n\tdelete $ENV{PERL5LIB};\n}" in run_pl,
+           "run.pl should unset PERL5LIB when no validated entries remain")
     expect('join ":"' not in run_pl, "run.pl should not hardcode Unix PERL5LIB separators")
     expect("exec { $command } $command, @ARGV;" in run_pl, "run.pl should exec get_iplayer without a shell")
     expect("`$command`" not in run_pl, "run.pl should not execute a shell command string")
@@ -186,6 +193,7 @@ def check_docs():
     ci_plan = read_text(CI_PLAN)
     wrapper_exec_plan = read_text("docs/plans/2026-06-10-wrapper-exec-tests.md")
     radio_guidance_plan = read_text("docs/plans/2026-06-12-radio-bitrate-guidance.md")
+    empty_entry_plan = read_text("docs/plans/2026-06-13-empty-perl5lib-entry-guard.md")
     workflow = read_text(".github/workflows/check.yml")
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
@@ -195,7 +203,9 @@ def check_docs():
            "Makefile should expose lint, test, build, and check verification gates")
     wrapper_test = read_text("t/run-wrapper.t")
     for token in ("wrapper preserves every argument exactly", "canonical duplicate local library path appears once",
-                  "existing PERL5LIB entry is preserved", "wrapper exec exits successfully"):
+                  "empty PERL5LIB entries are removed", "existing PERL5LIB entry is preserved",
+                  "PERL5LIB is unset when no validated entries remain",
+                  "wrapper exec exits successfully"):
         expect(token in wrapper_test, "wrapper exec test should cover {}".format(token))
 
     for text_name, text in (
@@ -211,6 +221,7 @@ def check_docs():
         expect("trailing slash" in lowered, "{} should document trailing slash PERL5LIB dedupe".format(text_name))
         expect("canonical path" in lowered, "{} should document canonical path PERL5LIB dedupe".format(text_name))
         expect("root path" in lowered, "{} should document root path PERL5LIB normalization".format(text_name))
+        expect("empty perl5lib" in lowered, "{} should document empty PERL5LIB entry filtering".format(text_name))
 
     expect("make lint" in readme and "make test" in readme and "make build" in readme,
            "README should document the standard local verification gates")
@@ -275,6 +286,10 @@ def check_docs():
            "wrapper exec test plan should be marked completed")
     expect("status: completed" in radio_guidance_plan and "mutation" in radio_guidance_plan.lower(),
            "radio bitrate guidance plan should record completed mutation verification")
+    expect("status: completed" in empty_entry_plan and "six hostile mutations" in empty_entry_plan.lower() and
+           "make lint" in empty_entry_plan and "make test" in empty_entry_plan and
+           "make build" in empty_entry_plan and "make check" in empty_entry_plan,
+           "empty PERL5LIB entry plan should record completed status and verification")
     expect("permissions:\n  contents: read" in workflow and "cancel-in-progress: true" in workflow and
            "runs-on: ubuntu-24.04" in workflow and "timeout-minutes: 10" in workflow and
            "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in workflow and
