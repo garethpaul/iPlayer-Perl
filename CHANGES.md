@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Made all Make verification aliases location-independent when invoked through
+  an absolute Makefile path.
 - Removed empty `PERL5LIB` entries before the wrapper rebuilds the module search
   path, preventing the launch directory from being added implicitly.
 

@@ -74,6 +74,7 @@ def check_required_files():
         "docs/plans/2026-06-10-wrapper-exec-tests.md",
         "docs/plans/2026-06-12-radio-bitrate-guidance.md",
         "docs/plans/2026-06-13-empty-perl5lib-entry-guard.md",
+        "docs/plans/2026-06-13-location-independent-make.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -194,13 +195,18 @@ def check_docs():
     wrapper_exec_plan = read_text("docs/plans/2026-06-10-wrapper-exec-tests.md")
     radio_guidance_plan = read_text("docs/plans/2026-06-12-radio-bitrate-guidance.md")
     empty_entry_plan = read_text("docs/plans/2026-06-13-empty-perl5lib-entry-guard.md")
+    location_independent_make_plan = read_text("docs/plans/2026-06-13-location-independent-make.md")
     workflow = read_text(".github/workflows/check.yml")
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
 
-    expect(".PHONY: build check lint test" in makefile and "lint test build: check" in makefile and
-           "check:\n\tpython3 scripts/check-baseline.py\n\tprove -v t" in makefile,
-           "Makefile should expose lint, test, build, and check verification gates")
+    expect(".PHONY: build check lint test" in makefile and
+           "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))" in makefile and
+           "lint test build: check" in makefile and
+           'check:\n\tpython3 "$(ROOT)/scripts/check-baseline.py"\n\tcd "$(ROOT)" && prove -v t' in makefile and
+           "python3 scripts/check-baseline.py" not in makefile and
+           "\n\tprove -v t" not in makefile,
+           "Makefile should expose location-independent verification gates")
     wrapper_test = read_text("t/run-wrapper.t")
     for token in ("wrapper preserves every argument exactly", "canonical duplicate local library path appears once",
                   "empty PERL5LIB entries are removed", "existing PERL5LIB entry is preserved",
@@ -290,6 +296,25 @@ def check_docs():
            "make lint" in empty_entry_plan and "make test" in empty_entry_plan and
            "make build" in empty_entry_plan and "make check" in empty_entry_plan,
            "empty PERL5LIB entry plan should record completed status and verification")
+    location_statuses = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", location_independent_make_plan
+    )
+    location_sections = location_independent_make_plan.split("## Verification Completed\n", 1)
+    location_verification = location_sections[1] if len(location_sections) == 2 else ""
+    expect(location_statuses == ["completed"] and
+           "All four Make gates passed from the checkout" in location_verification and
+           "All four Make gates passed from `/tmp` through the absolute Makefile path" in location_verification and
+           "python3 -m py_compile scripts/check-baseline.py" in location_verification and
+           "perl -c run.pl" in location_verification and
+           "perl -c t/run-wrapper.t" in location_verification and
+           "seven TAP assertions" in location_verification and
+           "git diff --check" in location_verification and
+           "Six isolated hostile mutations were rejected" in location_verification and
+           re.search(r"(?i)\b(?:pending|todo|tbd|not run)\b", location_verification) is None,
+           "location-independent Make plan should record completed status and actual local verification")
+    expect("absolute makefile path" in readme.lower() and
+           "location-independent" in changes.lower(),
+           "README and CHANGES should document location-independent Make verification")
     expect("permissions:\n  contents: read" in workflow and "cancel-in-progress: true" in workflow and
            "runs-on: ubuntu-24.04" in workflow and "timeout-minutes: 10" in workflow and
            "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in workflow and

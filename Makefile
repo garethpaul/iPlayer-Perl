@@ -1,7 +1,9 @@
 .PHONY: build check lint test
 
+ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
 lint test build: check
 
 check:
-	python3 scripts/check-baseline.py
-	prove -v t
+	python3 "$(ROOT)/scripts/check-baseline.py"
+	cd "$(ROOT)" && prove -v t

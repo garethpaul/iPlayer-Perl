@@ -102,6 +102,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
 ## Maintenance Notes
 
 - Run `make lint`, `make test`, `make build`, and `make check` before pushing changes to `run.pl`, `get_iplayer`, docs, ignore rules, or generated help/manpage handling.
+- The same gates may be invoked through an absolute Makefile path from another
+  directory; verification resolves the checker and TAP tests relative to the
+  checkout.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-10-ci-baseline.md` for the lightweight CI baseline.
