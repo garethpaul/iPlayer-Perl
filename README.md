@@ -54,7 +54,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Running or Using the Project
 
 - Run `./get_iplayer --help` to inspect command-line options, then use the options relevant to the BBC programme or radio workflow you are testing.
-- Use `./run.pl --help` when exercising the wrapper. It forwards arguments directly to `get_iplayer` without invoking a shell and builds `PERL5LIB` with Perl's configured path separator. The wrapper prepends existing local library paths for the `mouse`, `mousex-getopt`, and `mousex-nativetraits` submodules before preserving existing entries, while removing empty PERL5LIB entries and avoiding duplicate local library paths already present in the environment, including trailing slash, root path, and canonical path variants.
+- Use `./run.pl --help` when exercising the wrapper. Execute it directly with Perl 5.26 or newer; its taint-mode launcher forwards arguments without a shell, rejects unsafe entrypoints, and preserves only absolute, non-symlinked, non-writable `PERL5LIB` directories after canonical deduplication. Existing local library paths for `mouse`, `mousex-getopt`, and `mousex-nativetraits` remain first when their directories pass the same validation.
 - Submodule URLs use HTTPS mirrors so dependency checkout metadata does not rely
   on unauthenticated `git://` transport.
 - This tool can download or stream media, use cookies or credentials, and invoke external players/transcoders depending on user-supplied options. Keep content access explicit and user-controlled.

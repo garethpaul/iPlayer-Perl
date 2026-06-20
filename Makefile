@@ -7,3 +7,4 @@ lint test build: check
 check:
 	python3 "$(ROOT)/scripts/check-baseline.py"
 	cd "$(ROOT)" && prove -v t
+	"$(ROOT)/tests/hostile-mutations.sh"
