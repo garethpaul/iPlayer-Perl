@@ -1,5 +1,16 @@
 # Changes
 
+## 2026-06-13
+
+- Made all Make verification aliases location-independent when invoked through
+  an absolute Makefile path.
+- Removed empty `PERL5LIB` entries before the wrapper rebuilds the module search
+  path, preventing the launch directory from being added implicitly.
+- Enabled startup taint mode and rejected relative, symlinked, writable, or
+  missing library paths before launching a bounded regular `get_iplayer` file.
+- Added location-independent hostile mutation checks and updated pinned CI
+  actions.
+
 ## 2026-06-12
 
 - Documented radio mode inspection, ordered higher-quality AAC preferences, and

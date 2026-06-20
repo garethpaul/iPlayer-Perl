@@ -7,6 +7,7 @@ import gzip
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -16,6 +17,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 FAILURES = []
 CI_PLAN = "docs/plans/2026-06-10-ci-baseline.md"
+MAX_FILE_BYTES = 1024 * 1024
+MAX_TOTAL_BYTES = 5 * 1024 * 1024
+MAX_FILES = 500
 
 
 def rel(path):
@@ -29,20 +33,57 @@ def expect(condition, message):
 
 def read_text(path):
     target = rel(path)
-    expect(target.exists(), "{} is missing".format(path))
-    if not target.exists():
+    try:
+        metadata = target.lstat()
+    except OSError:
+        expect(False, "{} is missing".format(path))
+        return ""
+    expect(stat.S_ISREG(metadata.st_mode) and not target.is_symlink(),
+           "{} should be a regular non-symlink file".format(path))
+    expect(metadata.st_size <= MAX_FILE_BYTES, "{} exceeds the file size limit".format(path))
+    if not stat.S_ISREG(metadata.st_mode) or target.is_symlink() or metadata.st_size > MAX_FILE_BYTES:
         return ""
     return target.read_text(encoding="utf-8", errors="replace")
 
 
 def run_command(args):
-    return subprocess.run(
-        args,
-        cwd=str(ROOT),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-    )
+    try:
+        return subprocess.run(
+            args,
+            cwd=str(ROOT),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            timeout=30,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return subprocess.CompletedProcess(args, 124, "command timed out: {}".format(exc))
+
+
+def check_repository_shape():
+    file_count = 0
+    total_bytes = 0
+    for current_root, directories, files in os.walk(str(ROOT), followlinks=False):
+        directories[:] = [name for name in directories if name not in (".git", "__pycache__")]
+        for name in directories:
+            target = Path(current_root) / name
+            expect(not target.is_symlink(), "{} should not be a symlink".format(target.relative_to(ROOT)))
+        for name in files:
+            target = Path(current_root) / name
+            relative = target.relative_to(ROOT)
+            try:
+                metadata = target.lstat()
+            except OSError as exc:
+                FAILURES.append("{} cannot be inspected: {}".format(relative, exc))
+                continue
+            file_count += 1
+            total_bytes += metadata.st_size
+            expect(stat.S_ISREG(metadata.st_mode) and not target.is_symlink(),
+                   "{} should be a regular non-symlink file".format(relative))
+            expect(metadata.st_size <= MAX_FILE_BYTES,
+                   "{} exceeds the file size limit".format(relative))
+    expect(file_count <= MAX_FILES, "repository exceeds the file-count limit")
+    expect(total_bytes <= MAX_TOTAL_BYTES, "repository exceeds the aggregate size limit")
 
 
 def check_required_files():
@@ -73,6 +114,8 @@ def check_required_files():
         CI_PLAN,
         "docs/plans/2026-06-10-wrapper-exec-tests.md",
         "docs/plans/2026-06-12-radio-bitrate-guidance.md",
+        "docs/plans/2026-06-13-empty-perl5lib-entry-guard.md",
+        "docs/plans/2026-06-13-location-independent-make.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -105,16 +148,21 @@ def check_static_resources():
 
 
 def check_perl_runtime():
-    for script in ("run.pl", "get_iplayer"):
-        result = run_command(["perl", "-c", script])
-        expect(result.returncode == 0, "{} should pass perl -c: {}".format(script, result.stdout.strip()))
+    for script, command in (("run.pl", ["perl", "-T", "-c", "run.pl"]),
+                            ("get_iplayer", ["perl", "-c", "get_iplayer"])):
+        result = run_command(command)
+        expect(result.returncode == 0, "{} should pass syntax validation: {}".format(script, result.stdout.strip()))
+
+    version = run_command(["perl", "-e", "exit($] >= 5.026 ? 0 : 1)"])
+    expect(version.returncode == 0, "wrapper validation requires Perl 5.26 or newer")
 
     for command in (["./get_iplayer", "--help"], ["./run.pl", "--help"]):
         result = run_command(command)
         output = result.stdout
-        expect("get_iplayer v2.76" in output, "{} should print versioned help".format(command[0]))
-        expect("Usage" in output, "{} should print usage help".format(command[0]))
-        expect("Recording Options" in output, "{} should print recording options".format(command[0]))
+        detail = output.strip()[-500:]
+        expect("get_iplayer v2.76" in output, "{} should print versioned help: {}".format(command[0], detail))
+        expect("Usage" in output, "{} should print usage help: {}".format(command[0], detail))
+        expect("Recording Options" in output, "{} should print recording options: {}".format(command[0], detail))
 
 
 def check_wrapper_guardrails():
@@ -123,6 +171,11 @@ def check_wrapper_guardrails():
     gitmodules = read_text(".gitmodules")
 
     expect(os.access(str(rel("run.pl")), os.X_OK), "run.pl should be executable")
+    expect(run_pl.startswith("#!/usr/bin/perl -T\n"), "run.pl should enable taint mode in its interpreter line")
+    expect("if !${^TAINT}" in run_pl and "requires Perl 5.26 or newer" in run_pl,
+           "run.pl should fail closed without taint mode or a safe Perl runtime")
+    expect("delete @ENV{qw(PERL5LIB PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV)}" in run_pl,
+           "run.pl should clear interpreter and shell injection variables before loading modules")
     expect("use strict;" in run_pl, "run.pl should enable strict")
     expect("use warnings;" in run_pl, "run.pl should enable warnings")
     expect("use Config qw(%Config);" in run_pl, "run.pl should use Perl configuration for path separators")
@@ -134,20 +187,31 @@ def check_wrapper_guardrails():
            "return $path if $path =~ m{\\A(?:[A-Za-z]:)?[\\\\/]+\\z};" in run_pl and
            "$path =~ s{[\\\\/]+\\z}{};" in run_pl,
            "run.pl should normalize path entries before duplicate comparison while preserving root path entries")
-    expect("sub comparable_path_entry" in run_pl and "abs_path($normalized_path)" in run_pl,
-           "run.pl should compare existing path entries by canonical path when possible")
-    expect("my %existing_perl5lib_entries = ();" in run_pl and
-           "map { comparable_path_entry($_) => 1 } split /\\Q$path_separator\\E/" in run_pl,
-           "run.pl should parse existing PERL5LIB entries with the configured path separator")
-    expect("my @perl5lib_entries = grep { -d $_ && !$existing_perl5lib_entries{comparable_path_entry($_)} } @local_libs;" in run_pl,
-           "run.pl should only prepend existing local library paths that are not already in PERL5LIB after canonical comparison")
+    expect("sub canonical_directory" in run_pl and "sub secure_directory" in run_pl and
+           "File::Spec->file_name_is_absolute" in run_pl and
+           "lstat $path" in run_pl and "$stat[2] & 0022" in run_pl,
+           "run.pl should require absolute, non-symlink, non-writable library directories")
+    expect("my @existing_perl5lib_entries = ();" in run_pl and
+           "split /\\Q$path_separator\\E/, $INHERITED_PERL5LIB, -1" in run_pl and
+           "my $safe = secure_directory($entry)" in run_pl,
+           "run.pl should rebuild inherited PERL5LIB from validated entries")
+    expect("sub secure_entrypoint" in run_pl and "MAX_ENTRYPOINT_BYTES" in run_pl and
+           "-l _ || !-f _" in run_pl and "group- or world-writable" in run_pl,
+           "run.pl should bound and validate the get_iplayer entrypoint")
+    expect("sub safe_argument" in run_pl and "map { safe_argument($_) } @ARGV" in run_pl,
+           "run.pl should untaint exact arguments without constructing a shell command")
+    expect("push @perl5lib_entries, @existing_perl5lib_entries;" in run_pl and
+           "push @perl5lib_entries, $ENV{PERL5LIB}" not in run_pl,
+           "run.pl should rebuild PERL5LIB from validated entries instead of appending the raw value")
     expect("if (@perl5lib_entries)" in run_pl and "$ENV{PERL5LIB} = join $path_separator, @perl5lib_entries;" in run_pl,
            "run.pl should avoid creating an empty PERL5LIB when no local or existing paths are available")
+    expect("else {\n\tdelete $ENV{PERL5LIB};\n}" in run_pl,
+           "run.pl should unset PERL5LIB when no validated entries remain")
     expect('join ":"' not in run_pl, "run.pl should not hardcode Unix PERL5LIB separators")
-    expect("exec { $command } $command, @ARGV;" in run_pl, "run.pl should exec get_iplayer without a shell")
+    expect("exec { $command } $command, @arguments;" in run_pl, "run.pl should exec get_iplayer without a shell")
     expect("`$command`" not in run_pl, "run.pl should not execute a shell command string")
     expect("join(\" \",map" not in run_pl, "run.pl should not quote argv by hand")
-    expect("$ENV{PERL5LIB}" in run_pl, "run.pl should preserve PERL5LIB handling")
+    expect("$INHERITED_PERL5LIB" in run_pl, "run.pl should preserve validated PERL5LIB handling")
 
     legacy_hash_ref = re.compile(r"%\{\s*\$(?:verpid_element|episode_element|series_element)\s*\}\s*->")
     expect(not legacy_hash_ref.search(get_iplayer), "get_iplayer should not use legacy hash-as-reference dereferences")
@@ -186,16 +250,24 @@ def check_docs():
     ci_plan = read_text(CI_PLAN)
     wrapper_exec_plan = read_text("docs/plans/2026-06-10-wrapper-exec-tests.md")
     radio_guidance_plan = read_text("docs/plans/2026-06-12-radio-bitrate-guidance.md")
+    empty_entry_plan = read_text("docs/plans/2026-06-13-empty-perl5lib-entry-guard.md")
+    location_independent_make_plan = read_text("docs/plans/2026-06-13-location-independent-make.md")
     workflow = read_text(".github/workflows/check.yml")
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
 
-    expect(".PHONY: build check lint test" in makefile and "lint test build: check" in makefile and
-           "check:\n\tpython3 scripts/check-baseline.py\n\tprove -v t" in makefile,
-           "Makefile should expose lint, test, build, and check verification gates")
+    expect(".PHONY: build check lint test" in makefile and
+           "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))" in makefile and
+           "lint test build: check" in makefile and
+           'check:\n\tpython3 "$(ROOT)/scripts/check-baseline.py"\n\tcd "$(ROOT)" && prove -v t' in makefile and
+           "python3 scripts/check-baseline.py" not in makefile and
+           "\n\tprove -v t" not in makefile,
+           "Makefile should expose location-independent verification gates")
     wrapper_test = read_text("t/run-wrapper.t")
     for token in ("wrapper preserves every argument exactly", "canonical duplicate local library path appears once",
-                  "existing PERL5LIB entry is preserved", "wrapper exec exits successfully"):
+                  "empty PERL5LIB entries are removed", "existing PERL5LIB entry is preserved",
+                  "PERL5LIB is unset when no validated entries remain",
+                  "wrapper exec exits successfully"):
         expect(token in wrapper_test, "wrapper exec test should cover {}".format(token))
 
     for text_name, text in (
@@ -211,6 +283,7 @@ def check_docs():
         expect("trailing slash" in lowered, "{} should document trailing slash PERL5LIB dedupe".format(text_name))
         expect("canonical path" in lowered, "{} should document canonical path PERL5LIB dedupe".format(text_name))
         expect("root path" in lowered, "{} should document root path PERL5LIB normalization".format(text_name))
+        expect("empty perl5lib" in lowered, "{} should document empty PERL5LIB entry filtering".format(text_name))
 
     expect("make lint" in readme and "make test" in readme and "make build" in readme,
            "README should document the standard local verification gates")
@@ -275,11 +348,34 @@ def check_docs():
            "wrapper exec test plan should be marked completed")
     expect("status: completed" in radio_guidance_plan and "mutation" in radio_guidance_plan.lower(),
            "radio bitrate guidance plan should record completed mutation verification")
+    expect("status: completed" in empty_entry_plan and "six hostile mutations" in empty_entry_plan.lower() and
+           "make lint" in empty_entry_plan and "make test" in empty_entry_plan and
+           "make build" in empty_entry_plan and "make check" in empty_entry_plan,
+           "empty PERL5LIB entry plan should record completed status and verification")
+    location_statuses = re.findall(
+        r"(?mi)^status:\s*(.+?)\s*$", location_independent_make_plan
+    )
+    location_sections = location_independent_make_plan.split("## Verification Completed\n", 1)
+    location_verification = location_sections[1] if len(location_sections) == 2 else ""
+    expect(location_statuses == ["completed"] and
+           "All four Make gates passed from the checkout" in location_verification and
+           "All four Make gates passed from `/tmp` through the absolute Makefile path" in location_verification and
+           "python3 -m py_compile scripts/check-baseline.py" in location_verification and
+           "perl -c run.pl" in location_verification and
+           "perl -c t/run-wrapper.t" in location_verification and
+           "seven TAP assertions" in location_verification and
+           "git diff --check" in location_verification and
+           "Six isolated hostile mutations were rejected" in location_verification and
+           re.search(r"(?i)\b(?:pending|todo|tbd|not run)\b", location_verification) is None,
+           "location-independent Make plan should record completed status and actual local verification")
+    expect("absolute makefile path" in readme.lower() and
+           "location-independent" in changes.lower(),
+           "README and CHANGES should document location-independent Make verification")
     expect("permissions:\n  contents: read" in workflow and "cancel-in-progress: true" in workflow and
            "runs-on: ubuntu-24.04" in workflow and "timeout-minutes: 10" in workflow and
-           "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in workflow and
+           "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" in workflow and
            "persist-credentials: false" in workflow and
-           "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" in workflow and
+           "actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c" in workflow and
            'python-version: "3.12"' in workflow and
            "sudo apt-get install --yes --no-install-recommends libwww-perl" in workflow and
            "run: make check" in workflow,
@@ -295,6 +391,7 @@ def check_docs():
 
 
 def main():
+    check_repository_shape()
     check_required_files()
     check_static_resources()
     check_perl_runtime()
