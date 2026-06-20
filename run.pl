@@ -6,7 +6,7 @@ BEGIN {
 	die "run.pl requires Perl 5.26 or newer for safe module lookup\n" if $] < 5.026;
 	$INHERITED_PERL5LIB = $ENV{PERL5LIB};
 	delete @ENV{qw(PERL5LIB PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV)};
-	$ENV{PATH} = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin";
+	$ENV{PATH} = "/usr/bin:/bin";
 }
 
 use strict;
