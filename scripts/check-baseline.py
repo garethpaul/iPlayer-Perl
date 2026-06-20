@@ -256,8 +256,10 @@ def check_docs():
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
 
+    make_lines = [line.strip() for line in makefile.splitlines()]
     expect(".PHONY: build check lint test" in makefile and
-           "ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))" in makefile and
+           make_lines.count("override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))") == 1 and
+           not any(line.startswith("ROOT :=") for line in make_lines) and
            "lint test build: check" in makefile and
            'check:\n\tpython3 "$(ROOT)/scripts/check-baseline.py"\n\tcd "$(ROOT)" && prove -v t' in makefile and
            "python3 scripts/check-baseline.py" not in makefile and
