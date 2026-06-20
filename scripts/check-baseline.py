@@ -159,9 +159,10 @@ def check_perl_runtime():
     for command in (["./get_iplayer", "--help"], ["./run.pl", "--help"]):
         result = run_command(command)
         output = result.stdout
-        expect("get_iplayer v2.76" in output, "{} should print versioned help".format(command[0]))
-        expect("Usage" in output, "{} should print usage help".format(command[0]))
-        expect("Recording Options" in output, "{} should print recording options".format(command[0]))
+        detail = output.strip()[-500:]
+        expect("get_iplayer v2.76" in output, "{} should print versioned help: {}".format(command[0], detail))
+        expect("Usage" in output, "{} should print usage help: {}".format(command[0], detail))
+        expect("Recording Options" in output, "{} should print recording options: {}".format(command[0], detail))
 
 
 def check_wrapper_guardrails():
