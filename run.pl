@@ -25,7 +25,7 @@ sub normalized_path_entry {
 	return $path;
 }
 
-sub secure_directory {
+sub canonical_directory {
 	my ($path) = @_;
 	return if !defined $path || !length $path || index($path, "\0") >= 0;
 	return if !File::Spec->file_name_is_absolute($path);
@@ -33,12 +33,19 @@ sub secure_directory {
 	return if !@link_stat || -l _ || !-d _;
 	my $canonical = abs_path($path);
 	return if !defined $canonical;
+	$canonical =~ /\A([^\0]+)\z/s or return;
+	return normalized_path_entry($1);
+}
+
+sub secure_directory {
+	my ($path) = @_;
+	my $canonical = canonical_directory($path);
+	return if !defined $canonical;
 	my @stat = stat $canonical;
 	return if !@stat || !-d _;
 	return if $stat[4] != 0 && $stat[4] != $>;
 	return if $stat[2] & 0022;
-	$canonical =~ /\A([^\0]+)\z/s or return;
-	return normalized_path_entry($1);
+	return $canonical;
 }
 
 sub secure_entrypoint {
@@ -72,8 +79,8 @@ if (defined $INHERITED_PERL5LIB && length $INHERITED_PERL5LIB) {
 	}
 }
 
-my $safe_bin = secure_directory($Bin);
-die "wrapper directory is not a secure absolute directory\n" if !defined $safe_bin;
+my $safe_bin = canonical_directory($Bin);
+die "wrapper directory is not a regular absolute directory\n" if !defined $safe_bin;
 my @local_libs = map { File::Spec->catdir($safe_bin, split m{/}) } (
 	"deps/mouse/lib",
 	"deps/mousex-getopt/lib",

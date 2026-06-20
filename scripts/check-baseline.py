@@ -186,7 +186,8 @@ def check_wrapper_guardrails():
            "return $path if $path =~ m{\\A(?:[A-Za-z]:)?[\\\\/]+\\z};" in run_pl and
            "$path =~ s{[\\\\/]+\\z}{};" in run_pl,
            "run.pl should normalize path entries before duplicate comparison while preserving root path entries")
-    expect("sub secure_directory" in run_pl and "File::Spec->file_name_is_absolute" in run_pl and
+    expect("sub canonical_directory" in run_pl and "sub secure_directory" in run_pl and
+           "File::Spec->file_name_is_absolute" in run_pl and
            "lstat $path" in run_pl and "$stat[2] & 0022" in run_pl,
            "run.pl should require absolute, non-symlink, non-writable library directories")
     expect("my @existing_perl5lib_entries = ();" in run_pl and
