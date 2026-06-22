@@ -5,7 +5,16 @@
 
 ## Overview
 
-`garethpaul/iPlayer-Perl` is a Perl command-line utility. get_iplayer
+`garethpaul/iPlayer-Perl` preserves a historical `get_iplayer` 2.76 client and
+its local Perl wrapper. The vendored client dates from 2010, is unsupported,
+and is not expected to provide working BBC search, download, or streaming
+functionality today.
+
+Its BBC iPlayer feed, playlist, RDF, media-selector, mobile, and schedule
+contracts have been retired or removed. For a maintained client, use the
+current [`get-iplayer/get_iplayer`](https://github.com/get-iplayer/get_iplayer)
+project; the corresponding modern release for this repository review is
+[`v3.36`](https://github.com/get-iplayer/get_iplayer/releases/tag/v3.36).
 
 This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Perl (1).
 
@@ -16,7 +25,7 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 - `Makefile` - local static verification entry point
 - `README.md` - project overview and local usage notes
 - `README`
-- `get_iplayer` - main command-line program
+- `get_iplayer` - historical, unsupported version 2.76 command-line client
 - `INSTALL` - project installation notes
 - `run.pl` - Perl script or command wrapper
 - `scripts/check-baseline.py` - static Perl/content-access baseline checks
@@ -28,14 +37,18 @@ Additional scan context:
 - Source directories: no top-level source directories detected
 - Dependency and build manifests: INSTALL
 - Entry points or build surfaces: `make lint`, `make test`, `make build`, `make check`, get_iplayer, run.pl
-- Test-looking files: no obvious test files detected
+- Test files: `t/run-wrapper.t` contains 17 TAP wrapper tests, and
+  `tests/hostile-mutations.sh` verifies seven rejected maintenance mutations
 
 ## Getting Started
 
 ### Prerequisites
 
 - Git
-- Perl
+- Perl 5.26 or newer for the maintained wrapper checks
+- Perl HTML/HTTP/LWP/URI modules used by the vendored client. On Ubuntu, CI
+  provides these with `libwww-perl`; other platforms may package them
+  separately.
 - Python 3 for static verification with `make lint`, `make test`, `make build`, and `make check`
 
 ### Setup
@@ -49,14 +62,19 @@ make build
 make check
 ```
 
-The setup commands above are derived from repository files. Legacy mobile, Python, or JavaScript samples may require older SDKs or package versions than a modern workstation uses by default.
+The setup commands above validate the historical snapshot and maintained
+wrapper; they do not restore the retired BBC service contracts. Install the
+maintained upstream project instead for current BBC iPlayer or BBC Sounds use.
 
 ## Running or Using the Project
 
-- Run `./get_iplayer --help` to inspect command-line options, then use the options relevant to the BBC programme or radio workflow you are testing.
+- `./get_iplayer --help` exposes the historical 2.76 command-line surface for
+  inspection only. Passing syntax and help checks does not establish working
+  BBC content access.
 - Use `./run.pl --help` when exercising the wrapper. Execute it directly with Perl 5.26 or newer; its taint-mode launcher forwards arguments without a shell, rejects unsafe entrypoints, and preserves only absolute, non-symlinked, non-writable `PERL5LIB` directories after canonical deduplication. Existing local library paths for `mouse`, `mousex-getopt`, and `mousex-nativetraits` remain first when their directories pass the same validation.
-- Submodule URLs use HTTPS mirrors so dependency checkout metadata does not rely
-  on unauthenticated `git://` transport.
+- `.gitmodules` retains three HTTPS mirror entries as legacy dependency-path
+  metadata, but this tree contains no pinned submodule gitlinks. Running
+  `git submodule update` therefore does not install those dependencies.
 - This tool can download or stream media, use cookies or credentials, and invoke external players/transcoders depending on user-supplied options. Keep content access explicit and user-controlled.
 - The legacy [`README`](README) documents radio mode inspection, ordered
   `--radiomode` preferences, and HTTP `--proxy`/`--partial-proxy` usage. It does
@@ -72,9 +90,12 @@ initializing optional submodules, accessing content, using cookies or
 credentials, downloading media, or invoking external players.
 
 - `make lint`, `make test`, `make build`, and `make check` run `scripts/check-baseline.py`, which validates Perl syntax with `perl -c`, verifies help output, parses the compressed man page and SVG overview, checks safe wrapper argument forwarding, empty PERL5LIB entry filtering, existing local library paths, local submodule library paths, duplicate local library paths including trailing slash, root path, and canonical path variants, HTTPS submodule URLs, and `PERL5LIB` path separator handling, and enforces documentation guardrails.
-- The same gate runs `prove -v t`, executing the wrapper against a temporary
-  fake `get_iplayer` to verify exact argument forwarding and canonical
-  `PERL5LIB` duplicate suppression.
+- The same gate runs all 17 TAP tests in `t/run-wrapper.t`, executing the
+  wrapper against a temporary fake `get_iplayer` to verify exact argument
+  forwarding, validated `PERL5LIB` handling, taint-safe startup, and rejection
+  of unsafe or oversized entrypoints.
+- `tests/hostile-mutations.sh` additionally verifies that seven changes which
+  weaken wrapper, Make, workflow, or entrypoint guardrails are rejected.
 - The `lint`, `test`, and `build` targets intentionally alias the static
   baseline so the standard local gate commands stay available while preserving
   the same Perl syntax and wrapper checks as `make check`.
