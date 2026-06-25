@@ -15,13 +15,16 @@ my $temp = tempdir(CLEANUP => 1);
 my $app = File::Spec->catdir($temp, "app");
 my $launch = File::Spec->catdir($temp, "launch");
 make_path($app, $launch);
+chmod 0755, $app, $launch or die "chmod fixture directories: $!";
 
 my $wrapper = File::Spec->catfile($app, "run.pl");
 copy(File::Spec->catfile($root, "run.pl"), $wrapper) or die "copy run.pl: $!";
 chmod 0755, $wrapper or die "chmod run.pl: $!";
 
 for my $path (qw(deps/mouse/lib deps/mousex-getopt/lib deps/mousex-nativetraits/lib existing/lib unsafe/lib)) {
-	make_path(File::Spec->catdir($app, split m{/}, $path));
+	my $directory = File::Spec->catdir($app, split m{/}, $path);
+	make_path($directory);
+	chmod 0755, $directory or die "chmod fixture directory $path: $!";
 }
 
 sub write_executable {
@@ -88,6 +91,13 @@ is(scalar(grep { $_ eq $missing || $_ eq $symlink || $_ eq $unsafe } @entries), 
 is(scalar(grep { defined(abs_path($_)) && abs_path($_) eq abs_path(File::Spec->catdir($app, "deps", "mouse", "lib")) } @entries), 1,
 	"canonical duplicate local library path appears once");
 ok(scalar(grep { defined(abs_path($_)) && abs_path($_) eq abs_path($existing) } @entries), "safe existing PERL5LIB entry is preserved");
+
+chmod 0777, $app or die "chmod writable app: $!";
+my ($writable_app_exit, @writable_app_output) = run_command($launch, { PERL5LIB => "" }, $wrapper, "--safe");
+isnt($writable_app_exit, 0, "wrapper rejects a group- or world-writable wrapper directory");
+like(join("", @writable_app_output), qr/wrapper directory.*writable/i,
+	"writable wrapper directory rejection is explicit");
+chmod 0755, $app or die "restore app permissions: $!";
 
 remove_tree(File::Spec->catdir($app, "deps"));
 my ($empty_exit, @empty_lines) = run_command($launch, { PERL5LIB => join($separator, "", "relative/lib", "") }, $wrapper);

@@ -1,5 +1,52 @@
 # Changes
 
+## 2026-06-25 04:49 - P1 - Reject writable wrapper directories
+
+### Summary
+Closed the executable-parent trust gap so the taint-mode wrapper will not launch
+`get_iplayer` from a directory another user can modify.
+
+### Work completed
+- Reused `secure_directory()` for the wrapper directory before resolving local
+  libraries or the executable.
+- Added TAP coverage for group/world-writable wrapper directories.
+- Added a hostile mutation that removes the new directory validation.
+- Stabilized positive wrapper fixtures at mode `0755` after Codex review found
+  common collaborative umasks could otherwise invalidate them.
+
+### Threads
+- Started: none — work completed directly in the current repository.
+- Continued: none.
+- Stopped: none.
+
+### Files changed
+- `run.pl` — enforced wrapper-directory ownership and mode checks.
+- `t/run-wrapper.t` — added failing-then-passing writable-directory regressions.
+- `scripts/check-baseline.py`, `tests/hostile-mutations.sh` — protected the new
+  source contract.
+- Documentation and plan files — recorded the security boundary and evidence.
+
+### Validation
+- `prove -v t/run-wrapper.t` — failed before implementation, then passed all
+  19 TAP cases after the fix.
+- `umask 0002; prove -v t/run-wrapper.t` — passed after the review fix.
+- `/usr/bin/make check` — passed static checks, TAP tests, and eight hostile
+  mutations.
+- `git diff --check` — passed.
+
+### Bugs / findings
+- P1: validating only the executable file allowed a writable parent directory,
+  where another user could replace the checked path before wrapper execution.
+- P2 review finding: the initial test fixture inherited the caller's umask and
+  needed an explicit safe directory mode.
+
+### Blockers
+- The historical BBC service and optional dependency submodules remain outside
+  the maintained offline wrapper surface.
+
+### Next action
+- Open a PR and complete Codex plus hosted review before merge.
+
 ## 2026-06-13
 
 - Made all Make verification aliases location-independent when invoked through

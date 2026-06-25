@@ -25,6 +25,8 @@ Priority:
 
 - Preserve the command-line tool, install notes, license, and man page
 - Keep `run.pl` forwarding arguments without shell command construction
+- Keep the wrapper directory owned and non-writable by other users before
+  resolving the historical executable
 - Keep `run.pl` building `PERL5LIB` with Perl's configured path separator
 - Keep wrapper submodule library paths aligned with `mouse`, `mousex-getopt`,
   and `mousex-nativetraits`

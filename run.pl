@@ -79,8 +79,8 @@ if (defined $INHERITED_PERL5LIB && length $INHERITED_PERL5LIB) {
 	}
 }
 
-my $safe_bin = canonical_directory($Bin);
-die "wrapper directory is not a regular absolute directory\n" if !defined $safe_bin;
+my $safe_bin = secure_directory($Bin);
+die "wrapper directory has unsafe ownership or is group- or world-writable\n" if !defined $safe_bin;
 my @local_libs = map { File::Spec->catdir($safe_bin, split m{/}) } (
 	"deps/mouse/lib",
 	"deps/mousex-getopt/lib",

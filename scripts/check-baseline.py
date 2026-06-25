@@ -198,6 +198,9 @@ def check_wrapper_guardrails():
     expect("sub secure_entrypoint" in run_pl and "MAX_ENTRYPOINT_BYTES" in run_pl and
            "-l _ || !-f _" in run_pl and "group- or world-writable" in run_pl,
            "run.pl should bound and validate the get_iplayer entrypoint")
+    expect("my $safe_bin = secure_directory($Bin);" in run_pl and
+           "wrapper directory has unsafe ownership or is group- or world-writable" in run_pl,
+           "run.pl should reject an untrusted wrapper directory before resolving the entrypoint")
     expect("sub safe_argument" in run_pl and "map { safe_argument($_) } @ARGV" in run_pl,
            "run.pl should untaint exact arguments without constructing a shell command")
     expect("push @perl5lib_entries, @existing_perl5lib_entries;" in run_pl and
@@ -269,6 +272,7 @@ def check_docs():
     for token in ("wrapper preserves every argument exactly", "canonical duplicate local library path appears once",
                   "empty PERL5LIB entries are removed", "existing PERL5LIB entry is preserved",
                   "PERL5LIB is unset when no validated entries remain",
+                  "wrapper rejects a group- or world-writable wrapper directory",
                   "wrapper exec exits successfully"):
         expect(token in wrapper_test, "wrapper exec test should cover {}".format(token))
 
