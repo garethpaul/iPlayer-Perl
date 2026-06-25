@@ -116,6 +116,7 @@ def check_required_files():
         "docs/plans/2026-06-12-radio-bitrate-guidance.md",
         "docs/plans/2026-06-13-empty-perl5lib-entry-guard.md",
         "docs/plans/2026-06-13-location-independent-make.md",
+        "docs/plans/2026-06-25-wrapper-ancestor-trust.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -180,6 +181,8 @@ def check_wrapper_guardrails():
     expect("use warnings;" in run_pl, "run.pl should enable warnings")
     expect("use Config qw(%Config);" in run_pl, "run.pl should use Perl configuration for path separators")
     expect("use Cwd qw(abs_path);" in run_pl, "run.pl should use canonical paths for duplicate checks")
+    expect("use File::Basename qw(dirname);" in run_pl,
+           "run.pl should inspect canonical directory ancestors")
     expect("$Config{path_sep}" in run_pl, "run.pl should read the configured PERL5LIB path separator")
     for local_lib in ("deps/mouse/lib", "deps/mousex-getopt/lib", "deps/mousex-nativetraits/lib"):
         expect(local_lib in run_pl, "run.pl should include local submodule library path {}".format(local_lib))
@@ -189,8 +192,10 @@ def check_wrapper_guardrails():
            "run.pl should normalize path entries before duplicate comparison while preserving root path entries")
     expect("sub canonical_directory" in run_pl and "sub secure_directory" in run_pl and
            "File::Spec->file_name_is_absolute" in run_pl and
-           "lstat $path" in run_pl and "$stat[2] & 0022" in run_pl,
-           "run.pl should require absolute, non-symlink, non-writable library directories")
+           "lstat $path" in run_pl and "$stat[2] & 0022" in run_pl and
+           "my $ancestor = dirname($canonical);" in run_pl and
+           "($ancestor_stat[2] & 0022) && !($ancestor_stat[2] & 01000)" in run_pl,
+           "run.pl should require absolute, non-symlink directories with trusted ancestor chains")
     expect("my @existing_perl5lib_entries = ();" in run_pl and
            "split /\\Q$path_separator\\E/, $INHERITED_PERL5LIB, -1" in run_pl and
            "my $safe = secure_directory($entry)" in run_pl,
@@ -199,7 +204,7 @@ def check_wrapper_guardrails():
            "-l _ || !-f _" in run_pl and "group- or world-writable" in run_pl,
            "run.pl should bound and validate the get_iplayer entrypoint")
     expect("my $safe_bin = secure_directory($Bin);" in run_pl and
-           "wrapper directory has unsafe ownership or is group- or world-writable" in run_pl,
+           "wrapper directory or ancestor has unsafe ownership" in run_pl,
            "run.pl should reject an untrusted wrapper directory before resolving the entrypoint")
     expect("sub safe_argument" in run_pl and "map { safe_argument($_) } @ARGV" in run_pl,
            "run.pl should untaint exact arguments without constructing a shell command")
@@ -255,6 +260,7 @@ def check_docs():
     radio_guidance_plan = read_text("docs/plans/2026-06-12-radio-bitrate-guidance.md")
     empty_entry_plan = read_text("docs/plans/2026-06-13-empty-perl5lib-entry-guard.md")
     location_independent_make_plan = read_text("docs/plans/2026-06-13-location-independent-make.md")
+    ancestor_trust_plan = read_text("docs/plans/2026-06-25-wrapper-ancestor-trust.md")
     workflow = read_text(".github/workflows/check.yml")
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
@@ -273,6 +279,7 @@ def check_docs():
                   "empty PERL5LIB entries are removed", "existing PERL5LIB entry is preserved",
                   "PERL5LIB is unset when no validated entries remain",
                   "wrapper rejects a group- or world-writable wrapper directory",
+                  "wrapper rejects a non-sticky writable ancestor directory",
                   "wrapper exec exits successfully"):
         expect(token in wrapper_test, "wrapper exec test should cover {}".format(token))
 
@@ -290,6 +297,8 @@ def check_docs():
         expect("canonical path" in lowered, "{} should document canonical path PERL5LIB dedupe".format(text_name))
         expect("root path" in lowered, "{} should document root path PERL5LIB normalization".format(text_name))
         expect("empty perl5lib" in lowered, "{} should document empty PERL5LIB entry filtering".format(text_name))
+        expect("non-sticky writable ancestor" in lowered,
+               "{} should document wrapper ancestor trust".format(text_name))
 
     expect("make lint" in readme and "make test" in readme and "make build" in readme,
            "README should document the standard local verification gates")
@@ -358,6 +367,10 @@ def check_docs():
            "make lint" in empty_entry_plan and "make test" in empty_entry_plan and
            "make build" in empty_entry_plan and "make check" in empty_entry_plan,
            "empty PERL5LIB entry plan should record completed status and verification")
+    expect("status: completed" in ancestor_trust_plan and
+           "21 TAP" in ancestor_trust_plan and "nine hostile mutations" in ancestor_trust_plan.lower() and
+           "make check" in ancestor_trust_plan,
+           "wrapper ancestor trust plan should record completed verification")
     location_statuses = re.findall(
         r"(?mi)^status:\s*(.+?)\s*$", location_independent_make_plan
     )

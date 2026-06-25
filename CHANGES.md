@@ -1,5 +1,48 @@
 # Changes
 
+## 2026-06-25T21:20:45Z — P1 security — cycle: canonical wrapper ancestor trust
+
+### Summary
+Closed the remaining directory-entry replacement gap by validating the full
+canonical ancestor chain before loading local libraries or executing the
+historical client.
+
+### Work completed
+- Rejected non-sticky group/world-writable ancestors while preserving trusted
+  sticky shared roots such as `/tmp`.
+- Added TAP coverage for a safe wrapper nested below an unsafe parent.
+- Added static source contracts and a ninth hostile mutation for ancestor checks.
+- Updated security, maintenance, and contributor guidance.
+
+### Threads
+- Started: wrapper ancestor-chain ownership and mode validation.
+- Continued: taint-mode environment cleanup, final-directory trust, entrypoint
+  shape/ownership checks, and list-form argument-preserving `exec`.
+- Stopped: none.
+
+### Files changed
+- `run.pl`, `t/run-wrapper.t`, `scripts/check-baseline.py`,
+  `tests/hostile-mutations.sh`, documentation, and
+  `docs/plans/2026-06-25-wrapper-ancestor-trust.md`.
+
+### Validation
+- RED: the nested wrapper executed below a mode `0775` parent.
+- GREEN: all 21 TAP assertions pass, including sticky `/tmp` ancestry.
+- `umask 0002; prove -v t/run-wrapper.t` passes all 21 assertions.
+- `/usr/bin/make check` passes static checks and nine hostile mutations.
+
+### Bugs / findings
+- P1: validating only the final wrapper directory did not prevent another user
+  from replacing its directory entry through a non-sticky writable ancestor.
+
+### Blockers
+- Live BBC content, credentials, media downloads, and optional dependency
+  submodules remain outside the maintained offline wrapper surface.
+
+### Next action
+- Verify the exact reviewed head in hosted Linux, then retain ancestor-chain
+  validation for future wrapper and local-library path changes.
+
 ## 2026-06-25 04:49 - P1 - Reject writable wrapper directories
 
 ### Summary

@@ -37,8 +37,8 @@ Additional scan context:
 - Source directories: no top-level source directories detected
 - Dependency and build manifests: INSTALL
 - Entry points or build surfaces: `make lint`, `make test`, `make build`, `make check`, get_iplayer, run.pl
-- Test files: `t/run-wrapper.t` contains 19 TAP wrapper tests, and
-  `tests/hostile-mutations.sh` verifies eight rejected maintenance mutations
+- Test files: `t/run-wrapper.t` contains 21 TAP wrapper tests, and
+  `tests/hostile-mutations.sh` verifies nine rejected maintenance mutations
 
 ## Getting Started
 
@@ -90,11 +90,12 @@ initializing optional submodules, accessing content, using cookies or
 credentials, downloading media, or invoking external players.
 
 - `make lint`, `make test`, `make build`, and `make check` run `scripts/check-baseline.py`, which validates Perl syntax with `perl -c`, verifies help output, parses the compressed man page and SVG overview, checks safe wrapper argument forwarding, empty PERL5LIB entry filtering, existing local library paths, local submodule library paths, duplicate local library paths including trailing slash, root path, and canonical path variants, HTTPS submodule URLs, and `PERL5LIB` path separator handling, and enforces documentation guardrails.
-- The same gate runs all 19 TAP tests in `t/run-wrapper.t`, executing the
+- The same gate runs all 21 TAP tests in `t/run-wrapper.t`, executing the
   wrapper against a temporary fake `get_iplayer` to verify exact argument
   forwarding, validated `PERL5LIB` handling, taint-safe startup, and rejection
-  of unsafe directories plus unsafe or oversized entrypoints.
-- `tests/hostile-mutations.sh` additionally verifies that eight changes which
+  of unsafe directories and non-sticky writable ancestors plus unsafe or
+  oversized entrypoints.
+- `tests/hostile-mutations.sh` additionally verifies that nine changes which
   weaken wrapper, Make, workflow, or entrypoint guardrails are rejected.
 - The `lint`, `test`, and `build` targets intentionally alias the static
   baseline so the standard local gate commands stay available while preserving

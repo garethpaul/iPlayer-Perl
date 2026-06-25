@@ -45,6 +45,8 @@ Helpful reports include:
 - The maintained wrapper rejects a symlinked, incorrectly owned, group-writable,
   or world-writable wrapper directory before resolving and executing the
   historical client.
+- The wrapper also rejects any non-sticky writable ancestor in the canonical
+  directory chain so another user cannot replace the validated directory entry.
 - Review found authentication, token, or session-related code paths; changes in those areas should receive security-focused review before merge.
 - Review found network clients, sockets, web APIs, or service endpoints; changes in those areas should receive security-focused review before merge.
 - Review found mobile permission or privacy-sensitive data handling; changes in those areas should receive security-focused review before merge.
