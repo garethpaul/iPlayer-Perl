@@ -26,6 +26,10 @@ for my $path (qw(deps/mouse/lib deps/mousex-getopt/lib deps/mousex-nativetraits/
 	make_path($directory);
 	chmod 0755, $directory or die "chmod fixture directory $path: $!";
 }
+for my $path (qw(deps deps/mouse deps/mousex-getopt deps/mousex-nativetraits existing unsafe)) {
+	my $directory = File::Spec->catdir($app, split m{/}, $path);
+	chmod 0755, $directory or die "chmod fixture ancestor $path: $!";
+}
 
 sub write_executable {
 	my ($path, $content) = @_;
@@ -98,6 +102,27 @@ isnt($writable_app_exit, 0, "wrapper rejects a group- or world-writable wrapper 
 like(join("", @writable_app_output), qr/wrapper directory.*writable/i,
 	"writable wrapper directory rejection is explicit");
 chmod 0755, $app or die "restore app permissions: $!";
+
+my $unsafe_parent = File::Spec->catdir($temp, "unsafe-parent");
+my $nested_app = File::Spec->catdir($unsafe_parent, "app");
+make_path($nested_app);
+chmod 0775, $unsafe_parent or die "chmod unsafe parent: $!";
+chmod 0755, $nested_app or die "chmod nested app: $!";
+my $nested_wrapper = File::Spec->catfile($nested_app, "run.pl");
+copy(File::Spec->catfile($root, "run.pl"), $nested_wrapper) or die "copy nested run.pl: $!";
+chmod 0755, $nested_wrapper or die "chmod nested run.pl: $!";
+write_executable(
+    File::Spec->catfile($nested_app, "get_iplayer"),
+    "#!/usr/bin/env perl\nprint qq{unsafe ancestor executed\\n};\n",
+);
+my ($unsafe_parent_exit, @unsafe_parent_output) = run_command(
+    $launch,
+    { PERL5LIB => "" },
+    $nested_wrapper,
+);
+isnt($unsafe_parent_exit, 0, "wrapper rejects a non-sticky writable ancestor directory");
+like(join("", @unsafe_parent_output), qr/wrapper directory.*ancestor/i,
+    "writable ancestor rejection is explicit");
 
 remove_tree(File::Spec->catdir($app, "deps"));
 my ($empty_exit, @empty_lines) = run_command($launch, { PERL5LIB => join($separator, "", "relative/lib", "") }, $wrapper);

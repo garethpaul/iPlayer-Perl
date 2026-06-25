@@ -13,6 +13,7 @@ use strict;
 use warnings;
 use Config qw(%Config);
 use Cwd qw(abs_path);
+use File::Basename qw(dirname);
 use File::Spec;
 use FindBin qw($Bin);
 
@@ -45,6 +46,16 @@ sub secure_directory {
 	return if !@stat || !-d _;
 	return if $stat[4] != 0 && $stat[4] != $>;
 	return if $stat[2] & 0022;
+	my $ancestor = dirname($canonical);
+	while ($ancestor ne $canonical) {
+		my @ancestor_stat = stat $ancestor;
+		return if !@ancestor_stat || !-d _;
+		return if $ancestor_stat[4] != 0 && $ancestor_stat[4] != $>;
+		return if ($ancestor_stat[2] & 0022) && !($ancestor_stat[2] & 01000);
+		my $parent = dirname($ancestor);
+		last if $parent eq $ancestor;
+		$ancestor = $parent;
+	}
 	return $canonical;
 }
 
@@ -80,7 +91,7 @@ if (defined $INHERITED_PERL5LIB && length $INHERITED_PERL5LIB) {
 }
 
 my $safe_bin = secure_directory($Bin);
-die "wrapper directory has unsafe ownership or is group- or world-writable\n" if !defined $safe_bin;
+die "wrapper directory or ancestor has unsafe ownership or is non-sticky group- or world-writable\n" if !defined $safe_bin;
 my @local_libs = map { File::Spec->catdir($safe_bin, split m{/}) } (
 	"deps/mouse/lib",
 	"deps/mousex-getopt/lib",

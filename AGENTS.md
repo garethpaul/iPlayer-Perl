@@ -42,6 +42,8 @@ command-line client with local dependency-path setup.
 - Do not commit cookies, credentials, private keys, proxy secrets, generated download history, local preference files, downloaded media, or generated subtitles.
 - Keep credential and cookie usage visible, documented, and tied to explicit user options. Do not add hidden collection, telemetry, or background content access.
 - Wrapper changes must preserve argument boundaries and avoid shell command construction from user input.
+- Wrapper and library paths must reject non-sticky writable ancestors, not only
+  unsafe permissions on the final directory.
 - Downloaded media and generated artifacts should remain local and ignored unless explicitly documented for a fixture or test.
 - Run `make lint`, `make test`, `make build`, and `make check` before pushing changes to `run.pl`, `get_iplayer`, docs, ignore rules, or generated help/manpage handling.
 

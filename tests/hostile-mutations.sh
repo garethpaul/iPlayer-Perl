@@ -70,4 +70,10 @@ sed -i.bak 's/my $safe_bin = secure_directory($Bin);/my $safe_bin = canonical_di
 rm -f "$case_dir/run.pl.bak"
 expect_rejected untrusted-wrapper-directory "$case_dir"
 
+case_dir="$WORK/untrusted-wrapper-ancestor"
+archive_repo "$case_dir"
+sed -i.bak 's/return if ($ancestor_stat\[2\] & 0022) && !(\$ancestor_stat\[2\] & 01000);/return if 0;/' "$case_dir/run.pl"
+rm -f "$case_dir/run.pl.bak"
+expect_rejected untrusted-wrapper-ancestor "$case_dir"
+
 printf 'all hostile mutations rejected\n'
