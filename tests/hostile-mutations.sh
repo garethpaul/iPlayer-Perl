@@ -64,4 +64,10 @@ sed -i.bak 's/exec { $command } $command, @arguments;/system("$command @argument
 rm -f "$case_dir/run.pl.bak"
 expect_rejected shell-exec "$case_dir"
 
+case_dir="$WORK/untrusted-wrapper-directory"
+archive_repo "$case_dir"
+sed -i.bak 's/my $safe_bin = secure_directory($Bin);/my $safe_bin = canonical_directory($Bin);/' "$case_dir/run.pl"
+rm -f "$case_dir/run.pl.bak"
+expect_rejected untrusted-wrapper-directory "$case_dir"
+
 printf 'all hostile mutations rejected\n'

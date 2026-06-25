@@ -42,6 +42,9 @@ Helpful reports include:
   runs read-only syntax and local help-output checks without initializing
   optional submodules, accessing content, using cookies or credentials,
   downloading media, or invoking external programs.
+- The maintained wrapper rejects a symlinked, incorrectly owned, group-writable,
+  or world-writable wrapper directory before resolving and executing the
+  historical client.
 - Review found authentication, token, or session-related code paths; changes in those areas should receive security-focused review before merge.
 - Review found network clients, sockets, web APIs, or service endpoints; changes in those areas should receive security-focused review before merge.
 - Review found mobile permission or privacy-sensitive data handling; changes in those areas should receive security-focused review before merge.
