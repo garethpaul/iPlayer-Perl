@@ -1,5 +1,39 @@
 # Changes
 
+## 2026-06-26T12:30:27Z — P1 security — cycle: shell tracing environment scrub
+
+### Summary
+Prevented inherited Bash option and trace-prompt state from crossing the
+taint-mode wrapper's child exec boundary.
+
+### Work completed
+- Added `SHELLOPTS`, `BASHOPTS`, and `PS4` to the reviewed environment scrub.
+- Proved all three hostile values are absent in the executed fake client.
+- Added an eleventh hostile mutation that restores inherited shell tracing.
+- Corrected stale test/mutation counts and contributor test guidance.
+- Documented why descendant Bash tracing state is not preserved.
+
+### Threads
+- None; the focused environment-boundary hardening was implemented directly.
+
+### Files changed
+- `run.pl` — expanded child environment scrub.
+- `t/run-wrapper.t` and `tests/hostile-mutations.sh` — exec-boundary and mutation
+  regressions.
+- `scripts/check-baseline.py` — static source, documentation, and plan contracts.
+- `README.md`, `SECURITY.md`, `VISION.md`, and `AGENTS.md` — maintained guidance.
+- `docs/plans/2026-06-26-shell-tracing-environment.md` — completed local proof.
+
+### Validation
+- RED: the 22-test TAP suite observed inherited `SHELLOPTS=xtrace` in the child.
+- GREEN: all 22 TAP assertions passed under default and collaborative `0002`
+  umasks.
+- Repository-root and external-directory Make gates passed with eleven hostile
+  mutations rejected.
+
+### Blockers
+- No BBC request, credential, download, stream, or external player was used.
+
 ## 2026-06-25T20:16:00-0700 — P2 documentation — refresh verified roadmap
 
 ### Summary

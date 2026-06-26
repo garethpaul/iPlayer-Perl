@@ -37,8 +37,8 @@ Additional scan context:
 - Source directories: no top-level source directories detected
 - Dependency and build manifests: INSTALL
 - Entry points or build surfaces: `make lint`, `make test`, `make build`, `make check`, get_iplayer, run.pl
-- Test files: `t/run-wrapper.t` contains 21 TAP wrapper tests, and
-  `tests/hostile-mutations.sh` verifies nine rejected maintenance mutations
+- Test files: `t/run-wrapper.t` contains 22 TAP wrapper tests, and
+  `tests/hostile-mutations.sh` verifies eleven rejected maintenance mutations
 
 ## Getting Started
 
@@ -71,7 +71,7 @@ maintained upstream project instead for current BBC iPlayer or BBC Sounds use.
 - `./get_iplayer --help` exposes the historical 2.76 command-line surface for
   inspection only. Passing syntax and help checks does not establish working
   BBC content access.
-- Use `./run.pl --help` when exercising the wrapper. Execute it directly with Perl 5.26 or newer; its taint-mode launcher forwards arguments without a shell, rejects unsafe entrypoints and wrapper directories, scrubs interpreter and shell startup variables, fixes `PATH`, and preserves only absolute, non-symlinked, non-writable `PERL5LIB` directories after canonical deduplication. Existing local library paths for `mouse`, `mousex-getopt`, and `mousex-nativetraits` remain first when their directories pass the same validation.
+- Use `./run.pl --help` when exercising the wrapper. Execute it directly with Perl 5.26 or newer; its taint-mode launcher forwards arguments without a shell, rejects unsafe entrypoints and wrapper directories, scrubs interpreter and shell startup variables including inherited shell tracing state, fixes `PATH`, and preserves only absolute, non-symlinked, non-writable `PERL5LIB` directories after canonical deduplication. Existing local library paths for `mouse`, `mousex-getopt`, and `mousex-nativetraits` remain first when their directories pass the same validation.
 - `.gitmodules` retains three HTTPS mirror entries as legacy dependency-path
   metadata, but this tree contains no pinned submodule gitlinks. Running
   `git submodule update` therefore does not install those dependencies.
@@ -95,7 +95,7 @@ credentials, downloading media, or invoking external players.
   forwarding, validated `PERL5LIB` handling, runtime environment scrubbing, taint-safe startup, and rejection
   of unsafe directories and non-sticky writable ancestors plus unsafe or
   oversized entrypoints.
-- `tests/hostile-mutations.sh` additionally verifies that ten changes which
+- `tests/hostile-mutations.sh` additionally verifies that eleven changes which
   weaken wrapper, Make, workflow, or entrypoint guardrails are rejected.
 - The `lint`, `test`, and `build` targets intentionally alias the static
   baseline so the standard local gate commands stay available while preserving

@@ -24,8 +24,10 @@ command-line client with local dependency-path setup.
 
 ## Testing guidance
 
-- The prepared branch has no dedicated test files yet; treat `make check` as the
-  minimum baseline until wrapper execution tests are integrated.
+- `t/run-wrapper.t` contains 22 TAP assertions for the real wrapper handoff,
+  environment, argument, path, directory, and entrypoint boundaries.
+- `tests/hostile-mutations.sh` must reject all eleven reviewed guardrail
+  mutations before a wrapper change is handed off.
 - Start with the narrowest relevant test or Make target, then run `make check` before handing off if the change is not documentation-only.
 - Keep README verification notes in sync when commands, fixtures, or supported toolchains change.
 
@@ -44,6 +46,8 @@ command-line client with local dependency-path setup.
 - Wrapper changes must preserve argument boundaries and avoid shell command construction from user input.
 - Runtime wrapper tests must prove interpreter/shell startup variables are
   absent from the executed child and `PATH` remains `/usr/bin:/bin`.
+- Keep inherited shell tracing state (`SHELLOPTS`, `BASHOPTS`, and `PS4`) out of
+  the executed child.
 - Wrapper and library paths must reject non-sticky writable ancestors, not only
   unsafe permissions on the final directory.
 - Downloaded media and generated artifacts should remain local and ignored unless explicitly documented for a fixture or test.

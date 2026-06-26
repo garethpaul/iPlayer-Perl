@@ -39,7 +39,9 @@ Helpful reports include:
 - Wrapper exec tests must preserve arbitrary argument boundaries, existing
   `PERL5LIB` content, and one canonical copy of each local dependency path.
 - The executed child must observe `PERLLIB`, `PERL5OPT`, `PERL_USE_UNSAFE_INC`,
-  `IFS`, `CDPATH`, `ENV`, and `BASH_ENV` unset, with `PATH=/usr/bin:/bin`.
+  `IFS`, `CDPATH`, `ENV`, `BASH_ENV`, `SHELLOPTS`, `BASHOPTS`, and `PS4`
+  unset, with `PATH=/usr/bin:/bin`. This prevents inherited shell tracing state
+  from changing or disclosing descendant Bash command execution.
 - The pinned Linux workflow installs Ubuntu's packaged LWP runtime modules and
   runs read-only syntax and local help-output checks without initializing
   optional submodules, accessing content, using cookies or credentials,

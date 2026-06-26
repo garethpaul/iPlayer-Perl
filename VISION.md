@@ -49,6 +49,7 @@ Priority:
 - Treat canonical path variants of wrapper-managed local paths as duplicates
 - Execute isolated wrapper handoff tests for arguments and `PERL5LIB`
 - Prove interpreter and shell startup variables are scrubbed at the child exec boundary
+- Keep inherited shell tracing options and trace prompts out of the executed child
 - Keep the legacy `get_iplayer` script syntax-checkable on the current Perl runtime
 - Keep `make lint`, `make test`, `make build`, and `make check` available as
   local verification gates

@@ -61,7 +61,7 @@ write_executable($fake, <<'FAKE');
 use strict;
 use warnings;
 print "PERL5LIB=", defined $ENV{PERL5LIB} ? $ENV{PERL5LIB} : "<unset>", "\n";
-for my $name (qw(PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV)) {
+for my $name (qw(PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV SHELLOPTS BASHOPTS PS4)) {
 	print "ENV=$name:", defined $ENV{$name} ? $ENV{$name} : "<unset>", "\n";
 }
 print "ENV=PATH:", defined $ENV{PATH} ? $ENV{PATH} : "<unset>", "\n";
@@ -88,6 +88,9 @@ my %hostile_environment = (
 	CDPATH => $launch,
 	ENV => File::Spec->catfile($launch, "sh-env"),
 	BASH_ENV => File::Spec->catfile($launch, "bash-env"),
+	SHELLOPTS => "xtrace",
+	BASHOPTS => "extdebug",
+	PS4 => "TRACE> ",
 	PATH => $launch,
 );
 my ($exit, @lines) = run_command($launch, \%hostile_environment, $wrapper, @arguments);
@@ -95,12 +98,12 @@ is($exit, 0, "wrapper exec exits successfully");
 
 chomp @lines;
 my $perl5lib_line = shift @lines;
-my @environment_lines = splice @lines, 0, 8;
+my @environment_lines = splice @lines, 0, 11;
 my @argument_lines = @lines;
 is_deeply(
 	\@environment_lines,
 	[
-		(map { "ENV=$_:<unset>" } qw(PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV)),
+		(map { "ENV=$_:<unset>" } qw(PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV SHELLOPTS BASHOPTS PS4)),
 		"ENV=PATH:/usr/bin:/bin",
 	],
 	"wrapper scrubs interpreter and shell startup variables before exec",
