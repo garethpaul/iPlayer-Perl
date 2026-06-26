@@ -1,5 +1,25 @@
 # Changes
 
+## 2026-06-25T20:16:00-0700 — P2 documentation — refresh verified roadmap
+
+### Summary
+Removed completed runtime and CLI-help work from the future roadmap and tied
+the current vision to the executable baseline.
+
+### Work completed
+- Recorded the maintained Perl, Python, and Perl-module expectations in the vision.
+- Documented that both direct and wrapped help paths execute offline.
+- Kept live BBC content access explicitly outside that verification claim.
+
+### Validation
+- `make check` passes the static, TAP, and hostile-mutation gates.
+
+### Blockers
+- No live BBC request, credential, download, stream, or player was used.
+
+### Next action
+- Clarify the preserved snapshot's upstream relationship and update policy.
+
 ## 2026-06-25T20:01:00-0700 — P2 security testing — cycle: runtime environment scrub proof
 
 ### Summary
