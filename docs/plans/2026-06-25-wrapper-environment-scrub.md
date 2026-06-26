@@ -40,4 +40,9 @@ status: completed
   inherited `IFS`.
 - `make lint`, `make test`, `make build`, and `make check` use the same canonical
   baseline and completed successfully.
+- Hosted baseline runs `28214345599` and `28214347029` passed on commit
+  `13478b52d5af69d707b791a6c3e664fb0e8191ef`; CodeQL run `28214345831`
+  passed for Actions and Python.
+- `codex review --base origin/master` was attempted but could not authenticate
+  to the OpenAI API (HTTP 401); manual exact-head review found no findings.
 - No BBC request, credential, download, stream, or external player was used.

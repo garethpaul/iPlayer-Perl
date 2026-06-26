@@ -22,6 +22,12 @@ into an exec-boundary runtime guarantee.
 ### Validation
 - `prove -v t/run-wrapper.t` — 22 TAP assertions passed.
 - `umask 0002; prove -v t/run-wrapper.t` — the same 22 assertions passed.
+- `make lint`, `make test`, `make build`, and `make check` — all passed with ten
+  hostile mutations rejected.
+- Hosted baseline runs `28214345599` and `28214347029` and Actions/Python
+  CodeQL run `28214345831` passed on the reviewed implementation head.
+- Codex review was attempted but blocked by OpenAI API HTTP 401; manual
+  exact-head security and regression review found no findings.
 
 ### Bugs / findings
 - P2: source checks did not prove the executed child received the scrubbed environment.
@@ -30,7 +36,8 @@ into an exec-boundary runtime guarantee.
 - No live BBC request, credential, download, stream, or player was used.
 
 ### Next action
-- Run all Make gates, review the exact head, and merge only after hosted checks pass.
+- Merge the final hosted-green head and retain this exec-boundary assertion for
+  future wrapper environment changes.
 
 ## 2026-06-25T21:20:45Z — P1 security — cycle: canonical wrapper ancestor trust
 
