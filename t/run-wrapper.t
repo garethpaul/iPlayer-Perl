@@ -61,6 +61,10 @@ write_executable($fake, <<'FAKE');
 use strict;
 use warnings;
 print "PERL5LIB=", defined $ENV{PERL5LIB} ? $ENV{PERL5LIB} : "<unset>", "\n";
+for my $name (qw(PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV)) {
+	print "ENV=$name:", defined $ENV{$name} ? $ENV{$name} : "<unset>", "\n";
+}
+print "ENV=PATH:", defined $ENV{PATH} ? $ENV{PATH} : "<unset>", "\n";
 print join("\n", map { "ARG=" . length($_) . ":" . unpack("H*", $_) } @ARGV), "\n";
 FAKE
 
@@ -75,11 +79,32 @@ my $separator = $Config{path_sep} || ":";
 my $inherited_perl5lib = join($separator, "", $duplicate, "relative/lib", $missing, $symlink, $unsafe, $existing, "");
 
 my @arguments = ("--search", "two words", "--pid=abc-123", "", "line\nbreak", q{'; echo not-a-shell});
-my ($exit, @lines) = run_command($launch, { PERL5LIB => $inherited_perl5lib }, $wrapper, @arguments);
+my %hostile_environment = (
+	PERL5LIB => $inherited_perl5lib,
+	PERLLIB => File::Spec->catdir($launch, "perl-lib"),
+	PERL5OPT => "-Mstrict",
+	PERL_USE_UNSAFE_INC => "1",
+	IFS => "hostile-ifs",
+	CDPATH => $launch,
+	ENV => File::Spec->catfile($launch, "sh-env"),
+	BASH_ENV => File::Spec->catfile($launch, "bash-env"),
+	PATH => $launch,
+);
+my ($exit, @lines) = run_command($launch, \%hostile_environment, $wrapper, @arguments);
 is($exit, 0, "wrapper exec exits successfully");
 
 chomp @lines;
-my ($perl5lib_line, @argument_lines) = @lines;
+my $perl5lib_line = shift @lines;
+my @environment_lines = splice @lines, 0, 8;
+my @argument_lines = @lines;
+is_deeply(
+	\@environment_lines,
+	[
+		(map { "ENV=$_:<unset>" } qw(PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV)),
+		"ENV=PATH:/usr/bin:/bin",
+	],
+	"wrapper scrubs interpreter and shell startup variables before exec",
+);
 is_deeply(
 	\@argument_lines,
 	[map { "ARG=" . length($_) . ":" . unpack("H*", $_) } @arguments],

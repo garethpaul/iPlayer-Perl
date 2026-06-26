@@ -1,5 +1,44 @@
 # Changes
 
+## 2026-06-25T20:01:00-0700 — P2 security testing — cycle: runtime environment scrub proof
+
+### Summary
+Converted the wrapper's startup-environment scrub from a source-only assertion
+into an exec-boundary runtime guarantee.
+
+### Work completed
+- Extended the fake `get_iplayer` child to report reviewed environment values.
+- Passed hostile interpreter and shell startup variables through the real wrapper.
+- Asserted seven variables are unset and `PATH` is fixed before child execution.
+- Added a runtime hostile mutation that preserves inherited `IFS`.
+
+### Threads
+- None; the focused test improvement was implemented directly.
+
+### Files changed
+- `t/run-wrapper.t`, `tests/hostile-mutations.sh`, static contracts, guidance,
+  and `docs/plans/2026-06-25-wrapper-environment-scrub.md`.
+
+### Validation
+- `prove -v t/run-wrapper.t` — 22 TAP assertions passed.
+- `umask 0002; prove -v t/run-wrapper.t` — the same 22 assertions passed.
+- `make lint`, `make test`, `make build`, and `make check` — all passed with ten
+  hostile mutations rejected.
+- Hosted baseline runs `28214345599` and `28214347029` and Actions/Python
+  CodeQL run `28214345831` passed on the reviewed implementation head.
+- Codex review was attempted but blocked by OpenAI API HTTP 401; manual
+  exact-head security and regression review found no findings.
+
+### Bugs / findings
+- P2: source checks did not prove the executed child received the scrubbed environment.
+
+### Blockers
+- No live BBC request, credential, download, stream, or player was used.
+
+### Next action
+- Merge the final hosted-green head and retain this exec-boundary assertion for
+  future wrapper environment changes.
+
 ## 2026-06-25T21:20:45Z — P1 security — cycle: canonical wrapper ancestor trust
 
 ### Summary
