@@ -5,7 +5,7 @@ BEGIN {
 	die "run.pl must be executed directly so Perl taint mode is enabled\n" if !${^TAINT};
 	die "run.pl requires Perl 5.26 or newer for safe module lookup\n" if $] < 5.026;
 	$INHERITED_PERL5LIB = $ENV{PERL5LIB};
-	delete @ENV{qw(PERL5LIB PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV)};
+	delete @ENV{qw(PERL5LIB PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV SHELLOPTS BASHOPTS PS4)};
 	$ENV{PATH} = "/usr/bin:/bin";
 }
 

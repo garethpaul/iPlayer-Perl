@@ -46,6 +46,12 @@ sed -i.bak 's/ IFS CDPATH/ CDPATH/' "$case_dir/run.pl"
 rm -f "$case_dir/run.pl.bak"
 expect_tap_rejected inherited-ifs "$case_dir"
 
+case_dir="$WORK/inherited-shell-tracing"
+archive_repo "$case_dir"
+sed -i.bak 's/ SHELLOPTS BASHOPTS PS4//' "$case_dir/run.pl"
+rm -f "$case_dir/run.pl.bak"
+expect_tap_rejected inherited-shell-tracing "$case_dir"
+
 case_dir="$WORK/caller-relative-make"
 archive_repo "$case_dir"
 sed -i.bak 's#python3 "$(ROOT)/scripts/check-baseline.py"#python3 scripts/check-baseline.py#' "$case_dir/Makefile"

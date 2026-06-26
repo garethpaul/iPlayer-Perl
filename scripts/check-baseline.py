@@ -118,6 +118,7 @@ def check_required_files():
         "docs/plans/2026-06-13-location-independent-make.md",
         "docs/plans/2026-06-25-wrapper-ancestor-trust.md",
         "docs/plans/2026-06-25-wrapper-environment-scrub.md",
+        "docs/plans/2026-06-26-shell-tracing-environment.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -176,7 +177,7 @@ def check_wrapper_guardrails():
     expect(run_pl.startswith("#!/usr/bin/perl -T\n"), "run.pl should enable taint mode in its interpreter line")
     expect("if !${^TAINT}" in run_pl and "requires Perl 5.26 or newer" in run_pl,
            "run.pl should fail closed without taint mode or a safe Perl runtime")
-    expect("delete @ENV{qw(PERL5LIB PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV)}" in run_pl,
+    expect("delete @ENV{qw(PERL5LIB PERLLIB PERL5OPT PERL_USE_UNSAFE_INC IFS CDPATH ENV BASH_ENV SHELLOPTS BASHOPTS PS4)}" in run_pl,
            "run.pl should clear interpreter and shell injection variables before loading modules")
     expect("use strict;" in run_pl, "run.pl should enable strict")
     expect("use warnings;" in run_pl, "run.pl should enable warnings")
@@ -263,6 +264,7 @@ def check_docs():
     location_independent_make_plan = read_text("docs/plans/2026-06-13-location-independent-make.md")
     ancestor_trust_plan = read_text("docs/plans/2026-06-25-wrapper-ancestor-trust.md")
     environment_scrub_plan = read_text("docs/plans/2026-06-25-wrapper-environment-scrub.md")
+    shell_tracing_plan = read_text("docs/plans/2026-06-26-shell-tracing-environment.md")
     workflow = read_text(".github/workflows/check.yml")
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
@@ -283,6 +285,7 @@ def check_docs():
                   "wrapper rejects a group- or world-writable wrapper directory",
                   "wrapper rejects a non-sticky writable ancestor directory",
                   "wrapper scrubs interpreter and shell startup variables before exec",
+                  "SHELLOPTS BASHOPTS PS4",
                   "wrapper exec exits successfully"):
         expect(token in wrapper_test, "wrapper exec test should cover {}".format(token))
 
@@ -302,6 +305,8 @@ def check_docs():
         expect("empty perl5lib" in lowered, "{} should document empty PERL5LIB entry filtering".format(text_name))
         expect("non-sticky writable ancestor" in lowered,
                "{} should document wrapper ancestor trust".format(text_name))
+        expect("shell tracing" in lowered,
+               "{} should document inherited shell tracing cleanup".format(text_name))
 
     expect("make lint" in readme and "make test" in readme and "make build" in readme,
            "README should document the standard local verification gates")
@@ -378,6 +383,11 @@ def check_docs():
            "22 TAP" in environment_scrub_plan and "ten hostile mutations" in environment_scrub_plan.lower() and
            "make check" in environment_scrub_plan,
            "wrapper environment scrub plan should record completed verification")
+    expect("status: completed" in shell_tracing_plan and
+           "22 TAP" in shell_tracing_plan and "eleven hostile mutations" in shell_tracing_plan.lower() and
+           "repository-root and external-directory" in shell_tracing_plan and
+           "No BBC request" in shell_tracing_plan,
+           "shell tracing environment plan should record completed verification")
     location_statuses = re.findall(
         r"(?mi)^status:\s*(.+?)\s*$", location_independent_make_plan
     )
