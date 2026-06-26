@@ -19,6 +19,12 @@ ignored downloaded media, credential and cookie boundaries, HTTPS submodule
 metadata, empty PERL5LIB entry filtering, root path wrapper normalization,
 canonical path wrapper dedupe, and content-access documentation.
 
+The maintained verification surface requires Perl 5.26 or newer, Python 3,
+and the HTML/HTTP/LWP/URI modules used by the vendored client. Both
+`./get_iplayer --help` and the hardened `./run.pl --help` wrapper path execute
+in the baseline; this proves local startup and help generation only, not live
+BBC content access.
+
 The current focus is:
 
 Priority:
@@ -54,8 +60,6 @@ Priority:
 
 Next priorities:
 
-- Document runtime and dependency expectations
-- Verify the CLI help path and basic script execution
 - Clarify upstream relationship and update policy
 - Keep content-access behavior aligned with applicable terms and user controls
 - Keep radio bitrate guidance tied to implemented modes without promising availability
