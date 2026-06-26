@@ -1,5 +1,37 @@
 # Changes
 
+## 2026-06-25T20:01:00-0700 — P2 security testing — cycle: runtime environment scrub proof
+
+### Summary
+Converted the wrapper's startup-environment scrub from a source-only assertion
+into an exec-boundary runtime guarantee.
+
+### Work completed
+- Extended the fake `get_iplayer` child to report reviewed environment values.
+- Passed hostile interpreter and shell startup variables through the real wrapper.
+- Asserted seven variables are unset and `PATH` is fixed before child execution.
+- Added a runtime hostile mutation that preserves inherited `IFS`.
+
+### Threads
+- None; the focused test improvement was implemented directly.
+
+### Files changed
+- `t/run-wrapper.t`, `tests/hostile-mutations.sh`, static contracts, guidance,
+  and `docs/plans/2026-06-25-wrapper-environment-scrub.md`.
+
+### Validation
+- `prove -v t/run-wrapper.t` — 22 TAP assertions passed.
+- `umask 0002; prove -v t/run-wrapper.t` — the same 22 assertions passed.
+
+### Bugs / findings
+- P2: source checks did not prove the executed child received the scrubbed environment.
+
+### Blockers
+- No live BBC request, credential, download, stream, or player was used.
+
+### Next action
+- Run all Make gates, review the exact head, and merge only after hosted checks pass.
+
 ## 2026-06-25T21:20:45Z — P1 security — cycle: canonical wrapper ancestor trust
 
 ### Summary

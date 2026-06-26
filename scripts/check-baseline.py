@@ -117,6 +117,7 @@ def check_required_files():
         "docs/plans/2026-06-13-empty-perl5lib-entry-guard.md",
         "docs/plans/2026-06-13-location-independent-make.md",
         "docs/plans/2026-06-25-wrapper-ancestor-trust.md",
+        "docs/plans/2026-06-25-wrapper-environment-scrub.md",
         "docs/readme-overview.svg",
         "get_iplayer",
         "man/get_iplayer.1.gz",
@@ -261,6 +262,7 @@ def check_docs():
     empty_entry_plan = read_text("docs/plans/2026-06-13-empty-perl5lib-entry-guard.md")
     location_independent_make_plan = read_text("docs/plans/2026-06-13-location-independent-make.md")
     ancestor_trust_plan = read_text("docs/plans/2026-06-25-wrapper-ancestor-trust.md")
+    environment_scrub_plan = read_text("docs/plans/2026-06-25-wrapper-environment-scrub.md")
     workflow = read_text(".github/workflows/check.yml")
     gitignore = read_text(".gitignore")
     makefile = read_text("Makefile")
@@ -280,6 +282,7 @@ def check_docs():
                   "PERL5LIB is unset when no validated entries remain",
                   "wrapper rejects a group- or world-writable wrapper directory",
                   "wrapper rejects a non-sticky writable ancestor directory",
+                  "wrapper scrubs interpreter and shell startup variables before exec",
                   "wrapper exec exits successfully"):
         expect(token in wrapper_test, "wrapper exec test should cover {}".format(token))
 
@@ -371,6 +374,10 @@ def check_docs():
            "21 TAP" in ancestor_trust_plan and "nine hostile mutations" in ancestor_trust_plan.lower() and
            "make check" in ancestor_trust_plan,
            "wrapper ancestor trust plan should record completed verification")
+    expect("status: completed" in environment_scrub_plan and
+           "22 TAP" in environment_scrub_plan and "ten hostile mutations" in environment_scrub_plan.lower() and
+           "make check" in environment_scrub_plan,
+           "wrapper environment scrub plan should record completed verification")
     location_statuses = re.findall(
         r"(?mi)^status:\s*(.+?)\s*$", location_independent_make_plan
     )

@@ -42,6 +42,8 @@ command-line client with local dependency-path setup.
 - Do not commit cookies, credentials, private keys, proxy secrets, generated download history, local preference files, downloaded media, or generated subtitles.
 - Keep credential and cookie usage visible, documented, and tied to explicit user options. Do not add hidden collection, telemetry, or background content access.
 - Wrapper changes must preserve argument boundaries and avoid shell command construction from user input.
+- Runtime wrapper tests must prove interpreter/shell startup variables are
+  absent from the executed child and `PATH` remains `/usr/bin:/bin`.
 - Wrapper and library paths must reject non-sticky writable ancestors, not only
   unsafe permissions on the final directory.
 - Downloaded media and generated artifacts should remain local and ignored unless explicitly documented for a fixture or test.

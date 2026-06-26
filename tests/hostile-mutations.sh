@@ -23,11 +23,28 @@ expect_rejected() {
   printf 'rejected mutation: %s\n' "$name"
 }
 
+expect_tap_rejected() {
+  name=$1
+  directory=$2
+  if (cd "$directory" && prove -v t/run-wrapper.t) >"$WORK/$name.log" 2>&1; then
+    printf 'runtime mutation unexpectedly passed: %s\n' "$name" >&2
+    cat "$WORK/$name.log" >&2
+    exit 1
+  fi
+  printf 'rejected runtime mutation: %s\n' "$name"
+}
+
 case_dir="$WORK/no-taint"
 archive_repo "$case_dir"
 sed -i.bak '1s/ -T$//' "$case_dir/run.pl"
 rm -f "$case_dir/run.pl.bak"
 expect_rejected no-taint "$case_dir"
+
+case_dir="$WORK/inherited-ifs"
+archive_repo "$case_dir"
+sed -i.bak 's/ IFS CDPATH/ CDPATH/' "$case_dir/run.pl"
+rm -f "$case_dir/run.pl.bak"
+expect_tap_rejected inherited-ifs "$case_dir"
 
 case_dir="$WORK/caller-relative-make"
 archive_repo "$case_dir"
